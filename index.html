@@ -260,7 +260,8 @@ td.comprado {
         <label for="importarArquivo" class="icon-button"><i class="fas fa-file-import"></i></label>
         <input type="file" id="importarArquivo" accept=".json" style="display: none;">
       
-      
+        <button class="icon-button" onclick="enviarViaWhatsApp()"><i class="fab fa-whatsapp"></i></button>
+
       
       
     </div>
@@ -477,6 +478,12 @@ function importarDeJSON(event) {
   }
 
   leitor.readAsText(arquivo);
+}
+
+function enviarViaWhatsApp() {
+  const mensagem = encodeURIComponent("Aqui está a minha lista de mercado:\n\n" + JSON.stringify(listaItens, null, 2));
+  const url = "whatsapp://send?text=" + mensagem;
+  window.location.href = url;
 }
 
 
