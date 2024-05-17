@@ -1,505 +1,438 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lista de Mercado</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-  <style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Mercado</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
 
+        .container {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 400px;
+            max-height: 100%;
+            position: relative;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow: auto;
+        }
 
-/* Estilos gerais */
-body {
-  font-family: Arial, sans-serif;
-  margin: 0;
-  padding: 0;
-  background-color: #f3f3f3; /* Fundo claro para facilitar a leitura */
-}
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
 
-h1 {
-  text-align: center;
-  margin-top: 20px;
-  font-size: 1.5em; /* Tamanho de fonte aumentado para melhor visibilidade */
-}
+        .search-bar {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
 
-#container {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
-  box-sizing: border-box; /* Garante que o padding não aumente a largura do container */
-  background-color: #fff; /* Fundo branco para destacar o conteúdo */
-  border-radius: 8px; /* Cantos arredondados para uma aparência mais suave */
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Sombra suave para um efeito de elevação */
-}
+        .search-bar input {
+            width: calc(100% - 20px);
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.9em; /* Tamanho da fonte reduzido para melhor ajuste em telas pequenas */
-  
-}
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
 
-th, td {
-  border: 1px solid #ddd;
-  padding: 12px;
-  text-align: left;
-  
-}
+        ul li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            background-color: #fafafa;
+        }
 
-th {
-  background-color: #22b5f0;
-}
+        ul li div {
+            flex-grow: 1;
+        }
 
-.checked td {
-  text-decoration: line-through;
-}
+        ul li button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #007BFF;
+            padding: 0 10px;
+        }
 
-.icon-button {
-  background-color: transparent;
-  border: none;
-  padding: 10;
-  cursor: pointer;
-  margin-bottom: 10px;
-  height: 20px;
+        .input-group {
+            display: none;
+            flex-direction: column;
+        }
 
-}
+        .input-group input {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
 
-#novoItem {
-  margin-top: 20px;
-  display: flex;
-  flex-direction: column; /* Altera a direção do flex para coluna em dispositivos móveis */
-  align-items: stretch; /* Estica os itens para preencher o espaço disponível */
-}
+        .input-group button {
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+        }
 
-#novoItem label {
-  flex: 1;
-}
+        .add-button,
+        .show-all-button {
+            display: inline-block;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+            margin-top: 10px;
+        }
 
-#novoItem input[type="text"],
-#novoItem input[type="number"],
-#novoItem input[type="checkbox"] {
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  transition: border-color 0.3s ease; /* Transição suave para a cor da borda */
-}
+        .add-button {
+            background-color: #28a745;
+        }
 
-#novoItem input[type="text"]:focus,
-#novoItem input[type="number"]:focus,
-#novoItem input[type="checkbox"]:focus {
-  border-color: #007bff; /* Cor da borda alterada ao focar */
-}
+        .edit-container,
+        .add-container {
+            display: none;
+            flex-direction: column;
+            margin-top: 10px;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 9999;
+        }
 
-#novoItem button {
-  flex: 1;
-  padding: 12px;
-  font-size: 16px;
-  font-weight: bold;
-  text-align: center;
-  text-decoration: none;
-  cursor: pointer;
-  border: none;
-  border-radius: 5px;
-  background-color: #007bff;
-  color: #fff;
-  transition: background-color 0.3s ease; /* Transição suave para a cor de fundo */
-}
+        .edit-container input,
+        .add-container input {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
 
-#novoItem button:hover {
-  background-color: #0056b3; /* Cor de fundo alterada ao passar o mouse */
-}
+        .edit-container button,
+        .add-container button {
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
 
-#filtro {
-  margin-bottom: 20px; /* Aumenta o espaçamento inferior */
-}
-
-#pesquisa {
-  width: calc(96%); 
-  padding: 15px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  transition: border-color 0.3s ease; /* Transição suave para a cor da borda */
-}
-
-#pesquisa:focus {
-  border-color: #007bff; /* Cor da borda alterada ao focar */
-}
-
-#opcoes-botoes {
-  display: flex;
-  align-items: center;
-}
-
-#opcoes-botoes button {
-  margin-left: 10px;
-}
-
-/* Adicionando estilo para reduzir o tamanho dos campos "Local" e "Comprado" */
-td.local,
-td.comprado {
-  max-width: 5px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-/* Estilo para o modal */
-.modal {
-  display: none;
-  position: fixed;
-  z-index: 1;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-  background-color: rgba(0,0,0,0.4);
-  padding-top: 60px;
-}
-
-.modal-content {
-  background-color: #fefefe;
-  margin: 5% auto;
-  padding: 20px;
-  border: 1px solid #888;
-  width: 80%;
-  border-radius: 8px; /* Cantos arredondados para uma aparência mais suave */
-}
-
-.close {
-  color: #aaa;
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
-}
-
-.close:hover,
-.close:focus {
-  color: black;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-/* Estilos para campos de entrada no modal */
-.modal-content label {
-  display: block;
-  margin-bottom: 10px;
-}
-
-.modal-content input[type="text"],
-.modal-content input[type="number"] {
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  transition: border-color 0.3s ease; /* Transição suave para a cor da borda */
-}
-
-.modal-content input[type="text"]:focus,
-.modal-content input[type="number"]:focus {
-  border-color: #007bff; /* Cor da borda alterada ao focar */
-}
-
-/* Estilos para botões no modal */
-.modal-content button {
-  display: block;
-  width: 100%;
-  padding: 12px;
-  font-size: 16px;
-  font-weight: bold;
-  text-align: center;
-  text-decoration: none;
-  cursor: pointer;
-  border: none;
-  border-radius: 5px;
-  background-color: #007bff;
-  color: #fff;
-  transition: background-color 0.3s ease; /* Transição suave para a cor de fundo */
-}
-
-.modal-content button:hover {
-  background-color: #0056b3; /* Cor de fundo alterada ao passar o mouse */
-}
-
-/* Estilos específicos para telas de celular */
-@media only screen and (max-width: 600px) {
-  .modal-content {
-    width: 90%;
-    padding: 20px;
-  }
-  
-  .modal-content button {
-    padding: 12px;
-    font-size: 14px;
-  }
-}
-
-
-
-  </style>
+        .edit-container.active,
+        .add-container.active {
+            display: flex;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
-  <div id="container">
-    <h1>Lista de Mercado</h1>
-
-    <div id="filtro">
-      <input type="text" id="pesquisa" onkeyup="filtrarLista()" placeholder="Digite o nome do produto ou local...">
+    <div class="container">
+        <h1>Lista de Mercado</h1>
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Pesquisar por produto ou local" oninput="filterItems()">
+        </div>
+        <ul id="itemList"></ul>
+        <div class="input-group" id="inputGroup">
+            <input type="text" id="itemInput" placeholder="Item">
+            <input type="number" id="quantityInput" placeholder="Quantidade">
+            <input type="text" id="locationInput" placeholder="Local">
+            <button onclick="addItem()">Adicionar</button>
+        </div>
+        <div class="edit-container" id="editContainer">
+            <input type="text" id="editItemInput" placeholder="Item">
+            <input type="number" id="editQuantityInput" placeholder="Quantidade">
+            <input type="text" id="editLocationInput" placeholder="Local">
+            <button onclick="updateItem()">Atualizar</button>
+            <button onclick="closeEditContainer()">Cancelar</button>
+        </div>
+        <div class="add-container" id="addContainer">
+            <input type="text" id="addItemInput" placeholder="Item">
+            <input type="number" id="addQuantityInput" placeholder="Quantidade">
+            <input type="text" id="addLocationInput" placeholder="Local">
+            <button onclick="addNewItem()">Adicionar</button>
+            <button onclick="closeAddContainer()">Cancelar</button>
+        </div>
+        <button class="add-button" onclick="openAddContainer()"><i class="fas fa-plus"></i></button>
+        <button class="show-all-button" onclick="toggleShowAll()">Mostrar Todos</button>
     </div>
-    
-    <div>
-      <button class="icon-button" onclick="excluirMarcados()"><i class="fas fa-trash-alt"></i></button>
-      <button class="icon-button" onclick="mostrarListaCompleta()"><i class="fas fa-list"></i></button>
-      <button class="icon-button" onclick="mostrarModalNovoItem()"><i class="fas fa-plus"></i></button>
-     
-     
-      
-        <button class="icon-button" onclick="exportarParaJSON()"><i class="fas fa-file-export"></i></button>
-        <label for="importarArquivo" class="icon-button"><i class="fas fa-file-import"></i></label>
-        <input type="file" id="importarArquivo" accept=".json" style="display: none;">
-      
-        <button class="icon-button" onclick="enviarViaWhatsApp()"><i class="fab fa-whatsapp"></i></button>
 
-      
-      
-    </div>
-    
-     
-    <table>
-      <thead>
-        <tr>
-          <th>Item</th>
-          <th>Quant.</th>
-          <th>Local</th>
-          <th>C</th>
-          <th>-</th>
-        </tr>
-      </thead>
-      <tbody id="lista">
-        <!-- Lista de itens será carregada aqui -->
-      </tbody>
-    </table>
-  </div>
+    <script>
+        const SHEET_ID = '1sPSsuFGyikE_QPwa0PnoVDcGg8Xykq-4N9yFqNrjyAE';
+        const SHEET_NAME = 'Lista';
+        let ACCESS_TOKEN = 'ya29.a0AXooCgtg9wJIlWRj2P1QmHNbSkAl3mjkBONgQ5H3_DdEZSFiODCnl-ahECpgsAQtQs05NzevP_7z3rQEdxjD4UQueo51AsltIfEBTvD37797-5_9ycr36bDDNukv6XXj5EUJdBgCX6LgNToKTOly7LF8YXqlPM5P8w0uaCgYKAZgSARASFQHGX2Mi57TBt8dCl-BnD6k6q13MCQ0171';
 
-  <!-- Modal para adição e edição de itens -->
-  <div id="modalNovoItem" class="modal">
-    <div class="modal-content">
-      <span class="close-button" onclick="fecharModalNovoItem()">&times;</span>
-      <h2>Adicionar Novo Item</h2>
-      <label for="produto">Produto:</label>
-      <input type="text" id="produtoModal" style="width:98%;">
-      <label for="quantidade">Quant.:</label>
-      <input type="number" id="quantidadeModal" min="1" value="1" style="width: 98%;">
-      <label for="local">Local:</label>
-      <input type="text" id="localModal" style="width:98%;">
-      <button class="button" onclick="adicionarItemModal()">Adicionar</button>
-    </div>
-  </div>
+        const REFRESH_TOKEN = '1//04YRtLPYQZlrGCgYIARAAGAQSNwF-L9Ir1c80L2Vti2IiztCWRTo_xf_0VbuHZpknIZqoYBPTFSg5pGefc8dpVBLz4KB_V_2OXB4';
+        const CLIENT_ID = '407408718192.apps.googleusercontent.com';
+        const CLIENT_SECRET = 'YOUR_CLIENT_SECRET';
 
-  <script>
-    let listaItens = JSON.parse(localStorage.getItem('listaItens')) || [];
-    let listaCompleta = [];
+        let showAll = false;
+        let selectedItem = null;
 
-    function carregarLista() {
-      const listaTabela = document.getElementById("lista");
-      listaTabela.innerHTML = "";
+        document.addEventListener('DOMContentLoaded', loadItems);
 
-      listaItens.sort((a, b) => (a.local > b.local) ? 1 : ((b.local > a.local) ? -1 : 0));
+        function loadItems() {
+            fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?access_token=${ACCESS_TOKEN}`)
+                .then(response => response.json())
+                .then(data => {
+                    const items = data.values.slice(1).map((row, index) => ({
+                        id: index + 2, // ID é a linha na planilha
+                        name: row[0],
+                        quantity: parseInt(row[1]),
+                        location: row[2]
+                    }));
 
-      listaItens.forEach((item, index) => {
-        const tr = document.createElement("tr");
-        if (item.comprado) {
-          tr.classList.add("checked");
+                    // Ordena os itens pelo local
+                    items.sort((a, b) => a.location.localeCompare(b.location));
+
+                    items.forEach(item => addItemToDOM(item));
+                })
+                .catch(error => console.error('Erro ao carregar itens:', error));
         }
-        tr.innerHTML = `
-          <td>${item.produto}</td>
-          <td><input type="number" value="${item.quantidade}" min="0" onchange="atualizarQuantidade(${index}, this.value)" style="width: 40px;"></td>
-          <td class="local">${item.local}</td>
-          <td class="comprado"><input type="checkbox" onchange="marcarComprado(${index}, this.checked)" ${item.comprado ? 'checked' : ''}></td>
-          <td>
-            <button class="icon-button" onclick="mostrarModalEditarItem(${index})"><i class="fas fa-edit"></i></button>
-            <button class="icon-button" onclick="ocultarItem(${index})"><i class="fas fa-eye-slash"></i></button>
-          </td>
-        `;
-        listaTabela.appendChild(tr);
-      });
-    }
 
-    function mostrarListaCompleta() {
-      const listaTabela = document.getElementById("lista");
-      listaItens = listaCompleta.slice();
-      listaTabela.querySelectorAll('input[type="checkbox"]').forEach(checkbox => checkbox.checked = false);
-      listaItens.forEach(item => item.comprado = false);
-      localStorage.setItem('listaItens', JSON.stringify(listaItens));
-      carregarLista();
-    }
+        function addNewItem() {
+            const itemInput = document.getElementById('addItemInput');
+            const quantityInput = document.getElementById('addQuantityInput');
+            const locationInput = document.getElementById('addLocationInput');
 
-    function marcarComprado(index, isChecked) {
-      listaItens[index].comprado = isChecked;
-      localStorage.setItem('listaItens', JSON.stringify(listaItens));
-      carregarLista();
-    }
+            if (itemInput.value.trim() === "" || quantityInput.value.trim() === "" || locationInput.value.trim() === "") {
+                alert("Por favor, preencha todos os campos.");
+                return;
+            }
 
-    function atualizarQuantidade(index, quantidade) {
-      listaItens[index].quantidade = parseInt(quantidade);
-      localStorage.setItem('listaItens', JSON.stringify(listaItens));
-    }
+            const item = {
+                name: itemInput.value,
+                quantity: parseInt(quantityInput.value),
+                location: locationInput.value
+            };
 
-    function adicionarItemModal() {
-      const produtoInput = document.getElementById("produtoModal");
-      const quantidadeInput = document.getElementById("quantidadeModal");
-      const localInput = document.getElementById("localModal");
+            addItemToDOM(item);
+            saveItem(item);
 
-      const novoItem = {
-        produto: produtoInput.value.toUpperCase(),
-        quantidade: parseInt(quantidadeInput.value),
-        local: localInput.value.toUpperCase(),
-        comprado: false
-      };
-
-      listaItens.push(novoItem);
-      listaCompleta.push(novoItem);
-      localStorage.setItem('listaItens', JSON.stringify(listaItens));
-      carregarLista();
-
-      produtoInput.value = "";
-      quantidadeInput.value = "1";
-      localInput.value = "";
-
-      fecharModalNovoItem();
-    }
-
-    function fecharModalNovoItem() {
-      const modal = document.getElementById("modalNovoItem");
-      modal.style.display = "none";
-    }
-
-    function mostrarModalNovoItem() {
-      const modal = document.getElementById("modalNovoItem");
-      modal.style.display = "block";
-    }
-
-    function mostrarModalEditarItem(index) {
-      const modal = document.getElementById("modalNovoItem");
-      modal.style.display = "block";
-
-      const produtoInput = document.getElementById("produtoModal");
-      const quantidadeInput = document.getElementById("quantidadeModal");
-      const localInput = document.getElementById("localModal");
-
-      produtoInput.value = listaItens[index].produto;
-      quantidadeInput.value = listaItens[index].quantidade;
-      localInput.value = listaItens[index].local;
-
-      listaItens.splice(index, 1);
-      localStorage.setItem('listaItens', JSON.stringify(listaItens));
-      carregarLista();
-    }
-
-    function ocultarItem(index) {
-      listaItens.splice(index, 1);
-      localStorage.setItem('listaItens', JSON.stringify(listaItens));
-      carregarLista();
-    }
-
-    function excluirMarcados() {
-      listaItens = listaItens.filter(item => !item.comprado);
-      localStorage.setItem('listaItens', JSON.stringify(listaItens));
-      carregarLista();
-    }
-
-    function filtrarLista() {
-      const filtro = document.getElementById("pesquisa").value.toUpperCase();
-      const listaFiltrada = listaItens.filter(item => 
-        item.produto.toUpperCase().includes(filtro) || item.local.toUpperCase().includes(filtro)
-      );
-      const listaTabela = document.getElementById("lista");
-      listaTabela.innerHTML = "";
-
-      listaFiltrada.sort((a, b) => (a.local > b.local) ? 1 : ((b.local > a.local) ? -1 : 0));
-
-      listaFiltrada.forEach((item, index) => {
-        const tr = document.createElement("tr");
-        if (item.comprado) {
-          tr.classList.add("checked");
+            itemInput.value = "";
+            quantityInput.value = "";
+            locationInput.value = "";
+            closeAddContainer();
         }
-        tr.innerHTML = `
-          <td>${item.produto}</td>
-          <td><input type="number" value="${item.quantidade}" min="0" onchange="atualizarQuantidade(${index}, this.value)" style="width: 40px;"></td>
-          <td class="local">${item.local}</td>
-          <td class="comprado"><input type="checkbox" onchange="marcarComprado(${index}, this.checked)" ${item.comprado ? 'checked' : ''}></td>
-          <td>
-            <button class="icon-button" onclick="mostrarModalEditarItem(${index})"><i class="fas fa-edit"></i></button>
-            <button class="icon-button" onclick="ocultarItem(${index})"><i class="fas fa-eye-slash"></i></button>
-          </td>
-        `;
-        listaTabela.appendChild(tr);
-      });
-    }
 
-    document.addEventListener("DOMContentLoaded", () => {
-      listaCompleta = listaItens.slice();
-      carregarLista();
-    });
+        function addItemToDOM(item) {
+            const itemList = document.getElementById('itemList');
+            const li = document.createElement('li');
+            li.style.display = item.quantity >= 1 || showAll ? 'flex' : 'none';
+            li.setAttribute('data-id', item.id);
 
-    function exportarParaJSON() {
-  const conteudoJSON = JSON.stringify(listaItens);
-  const blob = new Blob([conteudoJSON], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'lista_mercado.json';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  
-   
-}
+            const div = document.createElement('div');
+            div.innerHTML = `<strong>${item.name}</strong> - <span>Quantidade: ${item.quantity}</span> - <small>${item.location}</small>`;
+            li.appendChild(div);
 
-document.getElementById('importarArquivo').addEventListener('change', function(event) {
-  importarDeJSON(event);
-});
+            const editButton = document.createElement('button');
+            editButton.innerHTML = '<i class="fas fa-edit icon"></i>';
+            editButton.onclick = function() {
+                openEditContainer(item);
+            };
+            li.appendChild(editButton);
 
-function importarDeJSON(event) {
-  const arquivo = event.target.files[0];
-  const leitor = new FileReader();
-  
-  leitor.onload = function(e) {
-    const conteudo = e.target.result;
-    const dados = JSON.parse(conteudo);
-    if (dados && Array.isArray(dados)) {
-      listaItens = dados;
-      localStorage.setItem('listaItens', JSON.stringify(listaItens));
-      carregarLista();
-    } else {
-      alert("Arquivo inválido!");
-    }
-  }
+            const removeButton = document.createElement('button');
+            removeButton.innerHTML = '<i class="fas fa-trash-alt icon"></i>';
+            removeButton.onclick = function() {
+                removeItem(item, li);
+            };
+            li.appendChild(removeButton);
 
-  leitor.readAsText(arquivo);
-}
+            itemList.appendChild(li);
+        }
 
-function enviarViaWhatsApp() {
-  let mensagem = "Lista de Compras:\n";
-  listaItens.forEach(item => {
-    mensagem += `${item.produto} - ${item.quantidade} - ${item.local}\n`;
-  });
+        function openEditContainer(item) {
+            const editContainer = document.getElementById('editContainer');
+            const editItemInput = document.getElementById('editItemInput');
+            const editQuantityInput = document.getElementById('editQuantityInput');
+            const editLocationInput = document.getElementById('editLocationInput');
 
-  // Criar a URL com o link do WhatsApp e a mensagem
-  const url = "https://api.whatsapp.com/send?text=" + encodeURIComponent(mensagem);
+            editItemInput.value = item.name;
+            editQuantityInput.value = item.quantity;
+            editLocationInput.value = item.location;
 
-  // Abrir o WhatsApp com a mensagem
-  window.open(url, '_blank');
-}
+            editContainer.classList.add('active');
+            selectedItem = item;
+        }
 
+        function updateItem() {
+            const editItemInput = document.getElementById('editItemInput');
+            const editQuantityInput = document.getElementById('editQuantityInput');
+            const editLocationInput = document.getElementById('editLocationInput');
 
+            selectedItem.name = editItemInput.value;
+            selectedItem.quantity = parseInt(editQuantityInput.value);
+            selectedItem.location = editLocationInput.value;
 
+            const li = document.querySelector(`#itemList li[data-id="${selectedItem.id}"] div`);
+            li.innerHTML = `<strong>${selectedItem.name}</strong> - <span>Quantidade: ${selectedItem.quantity}</span> - <small>${selectedItem.location}</small>`;
 
+            updateItemInSheet(selectedItem);
 
+            closeEditContainer();
+        }
 
-  </script>
+        function closeEditContainer() {
+            const editContainer = document.getElementById('editContainer');
+            editContainer.classList.remove('active');
+            selectedItem = null;
+        }
+
+        function removeItem(item, li) {
+            if (confirm(`Tem certeza que deseja remover ${item.name}?`)) {
+                li.remove();
+                deleteItem(item);
+            }
+        }
+
+        function saveItem(item) {
+            fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A1:append?valueInputOption=USER_ENTERED&access_token=${ACCESS_TOKEN}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    values: [
+                        [item.name, item.quantity, item.location]
+                    ]
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Item salvo com sucesso:', data);
+            })
+            .catch(error => {
+                console.error('Erro ao salvar item:', error);
+            });
+        }
+
+        function updateItemInSheet(item) {
+            fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A${item.id}:C${item.id}?valueInputOption=USER_ENTERED&access_token=${ACCESS_TOKEN}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    values: [
+                        [item.name, item.quantity, item.location]
+                    ]
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Item atualizado com sucesso:', data);
+            })
+            .catch(error => {
+                console.error('Erro ao atualizar item:', error);
+            });
+        }
+
+        function deleteItem(item) {
+            // Como não é possível remover uma linha diretamente via API, por enquanto apenas atualizamos a quantidade para zero
+            updateItemInSheet({ ...item, quantity: 0 });
+        }
+
+        function toggleInputGroup() {
+            const inputGroup = document.getElementById('inputGroup');
+            inputGroup.style.display = inputGroup.style.display === 'none' ? 'flex' : 'none';
+        }
+
+        function toggleShowAll() {
+            showAll = !showAll;
+            filterItems();
+        }
+
+        function filterItems() {
+            const searchText = document.getElementById('searchInput').value.toLowerCase();
+            const items = document.querySelectorAll('#itemList li');
+
+            function compareLocations(a, b) {
+                const locationA = a.querySelector('small').innerText.toLowerCase();
+                const locationB = b.querySelector('small').innerText.toLowerCase();
+                if (locationA === 'c frios') {
+                    return 1; // Colocar 'C Frios' por último
+                } else if (locationB === 'c frios') {
+                    return -1; // Colocar 'C Frios' por último
+                } else {
+                    return locationA.localeCompare(locationB); // Ordenar por ordem alfabética padrão
+                }
+            }
+
+            items.forEach(item => {
+                const name = item.querySelector('strong').innerText.toLowerCase();
+                const location = item.querySelector('small').innerText.toLowerCase();
+                const quantity = parseInt(item.querySelector('span').innerText.split(': ')[1]);
+                const isVisible = (name.includes(searchText) || location.includes(searchText)) && (quantity >= 1 || showAll);
+                item.style.display = isVisible ? 'flex' : 'none';
+            });
+
+            const sortedItems = Array.from(items).sort(compareLocations);
+            const itemList = document.getElementById('itemList');
+            itemList.innerHTML = '';
+            sortedItems.forEach(item => {
+                itemList.appendChild(item);
+            });
+        }
+
+        function openAddContainer() {
+            const addContainer = document.getElementById('addContainer');
+            addContainer.classList.add('active');
+        }
+
+        function closeAddContainer() {
+            const addContainer = document.getElementById('addContainer');
+            addContainer.classList.remove('active');
+        }
+
+        function refreshAccessToken() {
+            fetch('https://oauth2.googleapis.com/token', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `client_id=${CLIENT_ID}&client_secret=${CLIENT_SECRET}&refresh_token=${REFRESH_TOKEN}&grant_type=refresh_token`
+            })
+            .then(response => response.json())
+            .then(data => {
+                ACCESS_TOKEN = data.access_token;
+                console.log('Token de acesso atualizado:', data);
+            })
+            .catch(error => {
+                console.error('Erro ao atualizar o token de acesso:', error);
+            });
+        }
+
+        setInterval(refreshAccessToken, 3500 * 1000); // Atualiza o token de acesso a cada 3500 segundos
+    </script>
 </body>
 </html>
