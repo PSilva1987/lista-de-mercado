@@ -472,25 +472,28 @@ function sortItemsByLocation() {
 }
 
 
-        function refreshAccessToken() {
-            fetch('https://oauth2.googleapis.com/token', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: `client_id=${CLIENT_ID}&client_secret=${CLIENT_SECRET}&refresh_token=${REFRESH_TOKEN}&grant_type=refresh_token`
-            })
-            .then(response => response.json())
-            .then(data => {
-                ACCESS_TOKEN = data.access_token;
-                console.log('Token de acesso atualizado:', data);
-            })
-            .catch(error => {
-                console.error('Erro ao atualizar o token de acesso:', error);
-            });
-        }
+        // Função para atualizar o token de acesso
+function refreshAccessToken() {
+    fetch('https://oauth2.googleapis.com/token', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: `client_id=${CLIENT_ID}&client_secret=${CLIENT_SECRET}&refresh_token=${REFRESH_TOKEN}&grant_type=refresh_token`
+    })
+    .then(response => response.json())
+    .then(data => {
+        ACCESS_TOKEN = data.access_token;
+        console.log('Token de acesso atualizado:', data);
+    })
+    .catch(error => {
+        console.error('Erro ao atualizar o token de acesso:', error);
+    });
+}
 
-        setInterval(refreshAccessToken, 3500 * 100000); // Atualiza o token de acesso a cada 3500 segundos
+// Chama a função de atualização de token a cada 3500 segundos (aproximadamente 1 hora)
+setInterval(refreshAccessToken, 3500 * 1000);
+
     </script>
 </body>
 </html>
