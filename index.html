@@ -189,9 +189,9 @@
     <script>
         const SHEET_ID = '1sPSsuFGyikE_QPwa0PnoVDcGg8Xykq-4N9yFqNrjyAE';
         const SHEET_NAME = 'Lista';
-        let ACCESS_TOKEN = 'ya29.a0AXooCgtg9wJIlWRj2P1QmHNbSkAl3mjkBONgQ5H3_DdEZSFiODCnl-ahECpgsAQtQs05NzevP_7z3rQEdxjD4UQueo51AsltIfEBTvD37797-5_9ycr36bDDNukv6XXj5EUJdBgCX6LgNToKTOly7LF8YXqlPM5P8w0uaCgYKAZgSARASFQHGX2Mi57TBt8dCl-BnD6k6q13MCQ0171';
+        let ACCESS_TOKEN = 'ya29.a0AXooCgt6v2zOGySgZYGhpFM4uZYwXLo3sM0xS9lk2Sow5bb0L3EBpF1Po9as8_yZPLQrlPFd0IsQjJMADMEbTrXkj8UX8Q9TiSLXK10ptVXevGkcR-qN4QBpZ7GmXgaEHl7bXD1UUtkdVC-LpBPtP_aYs97zJdiypqTGaCgYKAZMSARASFQHGX2MipupOSImtjuerJkvArpYs_g0171';
 
-        const REFRESH_TOKEN = '1//04YRtLPYQZlrGCgYIARAAGAQSNwF-L9Ir1c80L2Vti2IiztCWRTo_xf_0VbuHZpknIZqoYBPTFSg5pGefc8dpVBLz4KB_V_2OXB4';
+        const REFRESH_TOKEN = '1//04RVa-nvkyijgCgYIARAAGAQSNwF-L9IrpBD-bxEuENvbqQ7IKSNCFuGqtYKU6nEWDB2xbxNUHSMLU_mAOMJOkBVn5H1L0By9syo';
         const CLIENT_ID = '407408718192.apps.googleusercontent.com';
         const CLIENT_SECRET = 'YOUR_CLIENT_SECRET';
 
@@ -241,6 +241,7 @@
             itemInput.value = "";
             quantityInput.value = "";
             locationInput.value = "";
+
             closeAddContainer();
         }
 
@@ -250,8 +251,20 @@
             li.style.display = item.quantity >= 1 || showAll ? 'flex' : 'none';
             li.setAttribute('data-id', item.id);
 
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.style.marginRight = '10px';
+            checkbox.onchange = function() {
+                if (checkbox.checked) {
+                    li.style.textDecoration = 'line-through';
+                } else {
+                    li.style.textDecoration = 'none';
+                }
+            };
+
             const div = document.createElement('div');
-            div.innerHTML = `<strong>${item.name}</strong> - <span>Quantidade: ${item.quantity}</span> - <small>${item.location}</small>`;
+            div.innerHTML = `<strong>${item.name}</strong> - <span>${item.quantity}</span> - <small>${item.location}</small>`;
+            li.appendChild(checkbox);
             li.appendChild(div);
 
             const editButton = document.createElement('button');
@@ -260,13 +273,6 @@
                 openEditContainer(item);
             };
             li.appendChild(editButton);
-
-            const removeButton = document.createElement('button');
-            removeButton.innerHTML = '<i class="fas fa-trash-alt icon"></i>';
-            removeButton.onclick = function() {
-                removeItem(item, li);
-            };
-            li.appendChild(removeButton);
 
             itemList.appendChild(li);
         }
@@ -295,7 +301,7 @@
             selectedItem.location = editLocationInput.value;
 
             const li = document.querySelector(`#itemList li[data-id="${selectedItem.id}"] div`);
-            li.innerHTML = `<strong>${selectedItem.name}</strong> - <span>Quantidade: ${selectedItem.quantity}</span> - <small>${selectedItem.location}</small>`;
+            li.innerHTML = `<strong>${selectedItem.name}</strong> - <span>${selectedItem.quantity}</span> - <small>${selectedItem.location}</small>`;
 
             updateItemInSheet(selectedItem);
 
@@ -306,13 +312,6 @@
             const editContainer = document.getElementById('editContainer');
             editContainer.classList.remove('active');
             selectedItem = null;
-        }
-
-        function removeItem(item, li) {
-            if (confirm(`Tem certeza que deseja remover ${item.name}?`)) {
-                li.remove();
-                deleteItem(item);
-            }
         }
 
         function saveItem(item) {
@@ -357,19 +356,15 @@
             });
         }
 
-        function deleteItem(item) {
-            // Como não é possível remover uma linha diretamente via API, por enquanto apenas atualizamos a quantidade para zero
-            updateItemInSheet({ ...item, quantity: 0 });
-        }
-
-        function toggleInputGroup() {
-            const inputGroup = document.getElementById('inputGroup');
-            inputGroup.style.display = inputGroup.style.display === 'none' ? 'flex' : 'none';
-        }
-
         function toggleShowAll() {
             showAll = !showAll;
             filterItems();
+            if (showAll) {
+                document.querySelectorAll('#itemList li input[type="checkbox"]').forEach(checkbox => {
+                    checkbox.checked = false;
+                    checkbox.parentElement.style.textDecoration = 'none';
+                });
+            }
         }
 
         function filterItems() {
@@ -391,7 +386,7 @@
             items.forEach(item => {
                 const name = item.querySelector('strong').innerText.toLowerCase();
                 const location = item.querySelector('small').innerText.toLowerCase();
-                const quantity = parseInt(item.querySelector('span').innerText.split(': ')[1]);
+                const quantity = parseInt(item.querySelector('span').innerText);
                 const isVisible = (name.includes(searchText) || location.includes(searchText)) && (quantity >= 1 || showAll);
                 item.style.display = isVisible ? 'flex' : 'none';
             });
@@ -414,6 +409,56 @@
             addContainer.classList.remove('active');
         }
 
+        document.addEventListener('DOMContentLoaded', () => {
+    loadItems();
+    sortItemsByLocation();
+});
+
+function loadItems() {
+    fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?access_token=${ACCESS_TOKEN}`)
+        .then(response => response.json())
+        .then(data => {
+            const items = data.values.slice(1).map((row, index) => ({
+                id: index + 2, // ID é a linha na planilha
+                name: row[0],
+                quantity: parseInt(row[1]),
+                location: row[2]
+            }));
+
+            // Ordena os itens pelo local
+            items.sort((a, b) => a.location.localeCompare(b.location));
+
+            items.forEach(item => addItemToDOM(item));
+        })
+        .catch(error => console.error('Erro ao carregar itens:', error));
+}
+
+function sortItemsByLocation() {
+    const itemList = document.getElementById('itemList');
+    const items = Array.from(itemList.children);
+
+    function compareLocations(a, b) {
+        const locationA = a.querySelector('small').innerText.toLowerCase();
+        const locationB = b.querySelector('small').innerText.toLowerCase();
+        if (locationA === 'c frios') {
+            return 1; // Colocar 'C Frios' por último
+        } else if (locationB === 'c frios') {
+            return -1; // Colocar 'C Frios' por último
+        } else {
+            return locationA.localeCompare(locationB); // Ordenar por ordem alfabética padrão
+        }
+    }
+
+    items.sort(compareLocations);
+
+    itemList.innerHTML = ''; // Limpa a lista antes de reordenar
+
+    items.forEach(item => {
+        itemList.appendChild(item);
+    });
+}
+
+
         function refreshAccessToken() {
             fetch('https://oauth2.googleapis.com/token', {
                 method: 'POST',
@@ -432,7 +477,7 @@
             });
         }
 
-        setInterval(refreshAccessToken, 3500 * 1000); // Atualiza o token de acesso a cada 3500 segundos
+        setInterval(refreshAccessToken, 3500 * 100000); // Atualiza o token de acesso a cada 3500 segundos
     </script>
 </body>
 </html>
