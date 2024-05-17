@@ -15,14 +15,27 @@
             align-items: center;
             height: 100vh;
         }
-
+.main{
+            background: #ecf0f3;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            max-height: 100%;
+            position: relative;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow: auto;
+            justify-content: center;
+            align-items: center;
+}
         .container {
             background: #fff;
             border-radius: 10px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             width: 90%;
             max-width: 400px;
-            max-height: 100%;
+            
             position: relative;
             padding: 20px;
             box-sizing: border-box;
@@ -106,7 +119,8 @@
             background-color: #007BFF;
             color: white;
             cursor: pointer;
-            margin-top: 10px;
+           
+            margin-bottom: 10px;
         }
 
         .add-button {
@@ -156,12 +170,23 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
+    <div class="main">
+        
     <div class="container">
         <h1>Lista de Mercado</h1>
-        <div class="search-bar">
+
+            <div class="search-bar">
             <input type="text" id="searchInput" placeholder="Pesquisar por produto ou local" oninput="filterItems()">
+        
         </div>
+
+        <div class="bottom-buttons">
+            <button class="show-all-button" onclick="toggleShowAll()">Mostrar Todos</button>
+            <button class="add-button" onclick="openAddContainer()"><i class="fas fa-plus"></i></button>
+        </div>
+
         <ul id="itemList"></ul>
+        
         <div class="input-group" id="inputGroup">
             <input type="text" id="itemInput" placeholder="Item">
             <input type="number" id="quantityInput" placeholder="Quantidade">
@@ -182,14 +207,14 @@
             <button onclick="addNewItem()">Adicionar</button>
             <button onclick="closeAddContainer()">Cancelar</button>
         </div>
-        <button class="add-button" onclick="openAddContainer()"><i class="fas fa-plus"></i></button>
-        <button class="show-all-button" onclick="toggleShowAll()">Mostrar Todos</button>
-    </div>
 
+           
+        </div> 
+        
     <script>
         const SHEET_ID = '1sPSsuFGyikE_QPwa0PnoVDcGg8Xykq-4N9yFqNrjyAE';
         const SHEET_NAME = 'Lista';
-        let ACCESS_TOKEN = 'ya29.a0AXooCgt6v2zOGySgZYGhpFM4uZYwXLo3sM0xS9lk2Sow5bb0L3EBpF1Po9as8_yZPLQrlPFd0IsQjJMADMEbTrXkj8UX8Q9TiSLXK10ptVXevGkcR-qN4QBpZ7GmXgaEHl7bXD1UUtkdVC-LpBPtP_aYs97zJdiypqTGaCgYKAZMSARASFQHGX2MipupOSImtjuerJkvArpYs_g0171';
+        let ACCESS_TOKEN = 'ya29.a0AXooCgv-iUmucxqVWaF5YwjsPwUHEHGh3ts1eMEipO2JinGp4BvAbYmPxEqnvjhJrdnGHD9IlRqIoYhS3StyljiVsp2CWbJfenN0FX4GSBw30etO0jR6MP3DEorOPrIXFzDundypxuSI80X14bKeVS2VdFA66Gw1hnRYaCgYKAYQSARASFQHGX2Mi4rz16S0uoQnFbM5ena1AWg0171';
 
         const REFRESH_TOKEN = '1//04RVa-nvkyijgCgYIARAAGAQSNwF-L9IrpBD-bxEuENvbqQ7IKSNCFuGqtYKU6nEWDB2xbxNUHSMLU_mAOMJOkBVn5H1L0By9syo';
         const CLIENT_ID = '407408718192.apps.googleusercontent.com';
@@ -212,7 +237,7 @@
                     }));
 
                     // Ordena os itens pelo local
-                    items.sort((a, b) => a.location.localeCompare(b.location));
+                    sortItemsByLocation();
 
                     items.forEach(item => addItemToDOM(item));
                 })
@@ -410,7 +435,8 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-    loadItems();
+   
+  
     sortItemsByLocation();
 });
 
@@ -426,12 +452,12 @@ function loadItems() {
             }));
 
             // Ordena os itens pelo local
-            items.sort((a, b) => a.location.localeCompare(b.location));
-
+            
             items.forEach(item => addItemToDOM(item));
+            filterItems();
         })
         .catch(error => console.error('Erro ao carregar itens:', error));
-}
+}sortItemsByLocation()
 
 function sortItemsByLocation() {
     const itemList = document.getElementById('itemList');
