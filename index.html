@@ -153,6 +153,35 @@
         .add-container.active {
             display: flex;
         }
+
+        .input-group-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.close-button {
+    
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    color: #007BFF;
+    margin-left: 90%;
+}
+
+.refresh-button{
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    color: #007BFF;
+    
+    
+}
+
+
+
+
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
@@ -160,6 +189,13 @@
    
         
     <div class="container">
+        <!-- Botões de fechar e atualizar -->
+<div class="input-group-header">
+    <!-- Botão de fechar -->
+    <button class="close-button" onclick="window.close()"><i class="fas fa-times"></i></button>
+    
+</div>
+
         <h1>Lista de Mercado</h1>
 
             <div class="search-bar">
@@ -170,6 +206,7 @@
         <div class="bottom-buttons">
             <button class="show-all-button" onclick="toggleShowAll()">Mostrar Todos</button>
             <button class="add-button" onclick="openAddContainer()"><i class="fas fa-plus"></i></button>
+            <button class="refresh-button" onclick="refreshItems()"><i class="fas fa-sync-alt"></i></button>
         </div>
 
         <ul id="itemList"></ul>
@@ -470,6 +507,14 @@ function sortItemsByLocation() {
         itemList.appendChild(item);
     });
 }
+
+
+
+function refreshItems() {
+    document.getElementById('itemList').innerHTML = '';
+    loadItems();
+}
+
 
 
         // Função para atualizar o token de acesso
