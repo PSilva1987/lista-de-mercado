@@ -179,31 +179,22 @@
 </head>
 <body>
     <div class="container">
-        <div class="input-group-header">
-            
-        </div>
-
+        <div class="input-group-header"></div>
         <h1>Lista de Mercado</h1>
-
         <div class="search-bar">
             <input type="text" id="searchInput" placeholder="Pesquisar por produto ou local" oninput="filterItems()">
         </div>
-
         <div class="bottom-buttons">
             <button class="show-all-button" onclick="toggleShowAll()">Mostrar Todos</button>
             <button class="add-button" onclick="openAddContainer()"><i class="fas fa-plus"></i></button>
-           
         </div>
-
         <ul id="itemList"></ul>
-
         <div class="input-group" id="inputGroup">
             <input type="text" id="itemInput" placeholder="Item">
             <input type="number" id="quantityInput" placeholder="Quantidade">
             <input type="text" id="locationInput" placeholder="Local">
             <button onclick="addItem()">Adicionar</button>
         </div>
-        
         <div class="edit-container" id="editContainer">
             <input type="text" id="editItemInput" placeholder="Item">
             <input type="number" id="editQuantityInput" placeholder="Quantidade">
@@ -211,7 +202,6 @@
             <button onclick="updateItem()">Atualizar</button>
             <button onclick="closeEditContainer()">Cancelar</button>
         </div>
-        
         <div class="add-container" id="addContainer">
             <input type="text" id="addItemInput" placeholder="Item">
             <input type="number" id="addQuantityInput" placeholder="Quantidade">
@@ -221,13 +211,14 @@
         </div>
     </div>
         
+        
     <script>
         const SHEET_ID = '1sPSsuFGyikE_QPwa0PnoVDcGg8Xykq-4N9yFqNrjyAE';
         const SHEET_NAME = 'Lista';
-        let ACCESS_TOKEN = 'ya29.a0AXooCgvHn2Zt9uUDbtvwyQthkoFz8xC1royuyOsp1kD3KoUtiEq0bqn0ZYDMLCAoClXWHpVftm0B_27cwqPKIb8aXlP2Wp7fgHu6YpPGCfsxM_FYLGJ07H8yQ98SWxWpPdgMP9azsDr3fr_bgSj6_KdzexdI9iC7xZQJaCgYKAcMSARESFQHGX2Miw6QBX5Wj7k-8WNOlkQsK4w0171';
-        const REFRESH_TOKEN = '1//04LXoMKyln9Z8CgYIARAAGAQSNwF-L9Irx2hV0wE3zxrWiXsWYr6f07hsDO9t3NRrZjKHDw70RqsiTZV33-8lDMdCchW8voPfibs';
+        let ACCESS_TOKEN = 'ya29.a0AXooCgtn7lcy2TgH0wha5ATzFP5ebdOgfs3CAd9_Cs-T6__Lsj7jKAYyx5c8392XEGIUgof4GjoYjBQCuaNsRH-syPlc6LxNZfRsmUwPGcYjNHmEMBUYCvj_hlwWLIlh8OsiHZtU4Hy_uVWjyi7EkD4tPmrPrKAf0WfCaCgYKAVESARESFQHGX2Mizbx0-35eGdDdZCdATO97lA0171';
+        const REFRESH_TOKEN = '1//04IC0bYDMthyUCgYIARAAGAQSNwF-L9IrbZvP307x63euScfaP3-cS0smO142VvVJKU85oN_wKvT4GDbjoS3-cnrKmfsb9eoHeuM';
         const CLIENT_ID = '324306023186-fpmafcv82trtnulosg6c8upv5r9udesi.apps.googleusercontent.com';
-        const CLIENT_SECRET = ''; // Atualize com seu CLIENT_SECRET
+        const CLIENT_SECRET = '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'; // Atualize com seu CLIENT_SECRET
 
         let showAll = false;
         let selectedItem = null;
@@ -255,38 +246,65 @@
         }
 
         function renderItems(items) {
-            const itemList = document.getElementById('itemList');
-            itemList.innerHTML = '';
+    const itemList = document.getElementById('itemList');
+    const listItemElements = Array.from(itemList.children);
 
-            if (!showAll) {
-                items = items.filter(item => item.quantity !== 0);
+    // Ordenar os itens por localização
+    items.sort((a, b) => {
+        const locationA = a.location.toLowerCase();
+        const locationB = b.location.toLowerCase();
+
+        if (locationA.startsWith('c') && locationB.startsWith('c')) {
+            const numberA = parseInt(locationA.replace(/[^0-9]/g, ''));
+            const numberB = parseInt(locationB.replace(/[^0-9]/g, ''));
+            return numberA - numberB;
+        }
+
+        return locationA.localeCompare(locationB);
+    });
+
+    items.forEach((item, index) => {
+        if (showAll || item.quantity !== 0) {
+            let li = listItemElements.find(li => li.dataset.id === `${item.id}`);
+
+            if (!li) {
+                li = document.createElement('li');
+                li.dataset.id = item.id;
+                itemList.appendChild(li);
             }
 
-            items = items.sort((a, b) => {
-                const locationA = a.location.toLowerCase();
-                const locationB = b.location.toLowerCase();
-
-                if (locationA.startsWith('c') && locationB.startsWith('c')) {
-                    const numberA = parseInt(locationA.replace(/[^0-9]/g, ''));
-                    const numberB = parseInt(locationB.replace(/[^0-9]/g, ''));
-                    return numberA - numberB;
-                }
-
-                return locationA.localeCompare(locationB);
-            });
-
-            items.forEach(item => {
-                const li = document.createElement('li');
-                li.innerHTML = `
-                    <div>
-                        <span><strong>${item.name}</strong> - ${item.quantity} - ${item.location}</span>
-                    </div>
-                    <button onclick="editItem(${item.id}, '${item.name}', ${item.quantity}, '${item.location}')"><i class="fas fa-edit"></i></button>
-                    <button onclick="deleteItem(${item.id})"><i class="fas fa-trash-alt"></i></button>
-                `;
-                itemList.appendChild(li);
-            });
+            li.innerHTML = `
+                <div>
+                    <input type="checkbox" id="checkbox${item.id}" onchange="toggleRowColor(${item.id})">
+                    <label for="checkbox${item.id}"><strong>${item.name}</strong> - ${item.quantity} - ${item.location}</label>
+                </div>
+                <button onclick="editItem(${item.id}, '${item.name}', ${item.quantity}, '${item.location}')"><i class="fas fa-edit"></i></button>
+                <button onclick="deleteItem(${item.id})"><i class="fas fa-trash-alt"></i></button>
+            `;
+            
+            // Adicionar classe para destacar linhas de acordo com a ordem
+            li.classList.toggle('highlighted', index % 2 === 0);
         }
+    });
+
+    // Remover elementos da lista que não estão mais presentes nos dados
+    listItemElements.forEach(li => {
+        if (!items.find(item => li.dataset.id === `${item.id}`)) {
+            li.remove();
+        }
+    });
+}
+
+        function toggleRowColor(itemId) {
+    const checkbox = document.getElementById(`checkbox${itemId}`);
+    const li = checkbox.parentNode.parentNode;
+    if (checkbox.checked) {
+        li.style.backgroundColor = '#7FFFD4'; // Verde
+    } else {
+        li.style.backgroundColor = '#fafafa'; // Branco (cor padrão)
+    }
+}
+
 
         function filterItems() {
             const searchInput = document.getElementById('searchInput').value.toLowerCase();
@@ -298,9 +316,18 @@
         }
 
         function toggleShowAll() {
-            showAll = !showAll;
-            loadItems();
-        }
+    showAll = !showAll;
+    loadItems();
+
+
+    // Restaurar a cor de fundo de todos os itens
+    const itemList = document.getElementById('itemList');
+    const items = Array.from(itemList.children);
+    items.forEach(item => {
+        item.classList.remove('highlighted');
+    });
+}
+
 
         function openAddContainer() {
             document.getElementById('addContainer').classList.add('active');
@@ -424,6 +451,8 @@
                 })
                 .catch(error => console.error('Erro ao atualizar o token de acesso:', error));
         }
+
+        
     </script>
 </body>
 </html>
