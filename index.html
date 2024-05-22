@@ -179,7 +179,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Lista de Mercado</h1>
+        <h1>Lista de Mercado 2</h1>
         <div class="search-bar">
             <input type="text" id="searchInput" placeholder="Pesquisar por produto ou local" oninput="filterItems()">
         </div>
@@ -213,9 +213,12 @@
 
     <script>
         const CLIENT_ID = '324306023186-fpmafcv82trtnulosg6c8upv5r9udesi.apps.googleusercontent.com';
-        const REDIRECT_URI = 'https://psilva1987.github.io/lista-de-mercado/';  // Certifique-se de que este URI está registrado no console do Google Cloud
+        const REDIRECT_URI = 'https://psilva1987.github.io/lista-de-mercado/';
         const SCOPES = 'https://www.googleapis.com/auth/spreadsheets';
+        const SHEET_ID = '1sPSsuFGyikE_QPwa0PnoVDcGg8Xykq-4N9yFqNrjyAE'; // Substitua pelo ID da sua planilha
+        const SHEET_NAME = 'Lista'; // Substitua pelo nome da aba da sua planilha
         let ACCESS_TOKEN = null;
+        let selectedItem = null;
 
         document.getElementById('loginButton').addEventListener('click', () => {
             const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=token&scope=${SCOPES}`;
@@ -247,26 +250,9 @@
 
             let response = await fetch(url, options);
 
-            if (response.status === 401) { // Token expirado ou inválido
-                const refreshResponse = await fetch(`https://oauth2.googleapis.com/token`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: `client_id=${CLIENT_ID}&client_secret=${CLIENT_SECRET}&refresh_token=${REFRESH_TOKEN}&grant_type=refresh_token`
-                });
-
-                if (refreshResponse.ok) {
-                    const refreshData = await refreshResponse.json();
-                    ACCESS_TOKEN = refreshData.access_token;
-
-                    // Tente novamente a requisição original com o novo token
-                    options.headers.Authorization = `Bearer ${ACCESS_TOKEN}`;
-                    response = await fetch(url, options);
-                } else {
-                    console.log('Erro ao atualizar o token de acesso: ' + refreshResponse.statusText);
-                    throw new Error('Erro ao atualizar o token de acesso: ' + refreshResponse.statusText);
-                }
+            if (response.status === 401) {
+                console.log('Token expirado ou inválido');
+                // Atualização do token de acesso (omitir se não houver refresh token)
             }
 
             return response;
@@ -274,7 +260,7 @@
 
         async function loadItems() {
             try {
-                let response = await fetchWithTokenRefresh(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:D`);
+                let response = await fetchWithTokenRefresh(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:C`);
                 if (response.ok) {
                     const data = await response.json();
                     const rows = data.values || [];
@@ -302,9 +288,9 @@
         }
 
         async function addItem() {
-            const item = document.getElementById('itemInput').value;
-            const quantity = document.getElementById('quantityInput').value;
-            const location = document.getElementById('locationInput').value;
+            const item = document.getElementById('addItemInput').value;
+            const quantity = document.getElementById('addQuantityInput').value;
+            const location = document.getElementById('addLocationInput').value;
 
             try {
                 const response = await fetchWithTokenRefresh(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:D:append?valueInputOption=RAW`, {
@@ -314,16 +300,17 @@
                     },
                     body: JSON.stringify({
                         values: [
-                            [item, quantity, location, new Date().toLocaleDateString()]
+                            [item, quantity, location]
                         ]
                     })
                 });
 
                 if (response.ok) {
                     loadItems();
-                    document.getElementById('itemInput').value = '';
-                    document.getElementById('quantityInput').value = '';
-                    document.getElementById('locationInput').value = '';
+                    closeAddContainer();
+                    document.getElementById('addItemInput').value = '';
+                    document.getElementById('addQuantityInput').value = '';
+                    document.getElementById('addLocationInput').value = '';
                 } else {
                     console.log('Erro ao adicionar item: ' + response.statusText);
                 }
@@ -340,7 +327,7 @@
             const location = document.getElementById('editLocationInput').value;
 
             try {
-                const response = await fetchWithTokenRefresh(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:D:batchUpdate`, {
+                const response = await fetchWithTokenRefresh(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:C:batchUpdate`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
