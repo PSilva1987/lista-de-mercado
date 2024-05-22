@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lista de Mercado</title>
     <style>
-          body {
+        body {
             font-family: Arial, sans-serif;
             background-color: #f0f0f0;
             margin: 0;
@@ -320,17 +320,11 @@
         }
 
         async function updateItem() {
-            console.log('Função updateItem chamada'); // Log de depuração
-            if (!selectedItem) {
-                console.log('Nenhum item selecionado para atualização');
-                return;
-            }
+            if (!selectedItem) return;
 
             const item = document.getElementById('editItemInput').value;
             const quantity = document.getElementById('editQuantityInput').value;
             const location = document.getElementById('editLocationInput').value;
-
-            console.log('Item a ser atualizado:', item, quantity, location); // Log de depuração
 
             try {
                 const response = await fetchWithTokenRefresh(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:C:batchUpdate`, {
