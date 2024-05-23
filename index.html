@@ -185,7 +185,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Lista de Mercado </h1>
+        <h1>Lista de Mercado 2</h1>
         <div class="search-bar">
             <input type="text" id="searchInput" placeholder="Pesquisar por produto ou local" oninput="filterItems()">
         </div>
@@ -198,14 +198,15 @@
             <input type="text" id="itemInput" placeholder="Item">
             <input type="number" id="quantityInput" placeholder="Quantidade">
             <input type="text" id="locationInput" placeholder="Local">
-            <button id="updateButton" style="display:none;">Atualizar</button>
-
+            <button onclick="addItem()">Adicionar</button>
         </div>
         <div class="edit-container" id="editContainer">
             <input type="text" id="editItemInput" placeholder="Item">
             <input type="number" id="editQuantityInput" placeholder="Quantidade">
             <input type="text" id="editLocationInput" placeholder="Local">
-            <button onclick="updateItem()">Atualizar</button>
+           
+<button id="updateButton" style="display:none;">Atualizar</button>
+
             <button onclick="closeEditContainer()">Cancelar</button>
         </div>
         <div class="add-container" id="addContainer">
@@ -265,7 +266,7 @@
             return response;
         }
 
-         function loadItems() {
+        async function loadItems() {
             try {
                 let response = await fetchWithTokenRefresh(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:C`);
                 if (response.ok) {
@@ -294,7 +295,7 @@
             }
         }
 
-        function addItem() {
+        async function addItem() {
             const item = document.getElementById('addItemInput').value;
             const quantity = document.getElementById('addQuantityInput').value;
             const location = document.getElementById('addLocationInput').value;
@@ -326,10 +327,10 @@
             }
         }
 
-        function updateItem() {
-    console.log('Função updateItem chamada'); // Log de depuração
+       async function updateItem() {
+    alert('Função updateItem chamada'); // Alerta de depuração
     if (!selectedItem) {
-        console.log('Nenhum item selecionado para atualização');
+        alert('Nenhum item selecionado para atualização');
         return;
     }
 
@@ -337,7 +338,7 @@
     const quantity = document.getElementById('editQuantityInput').value;
     const location = document.getElementById('editLocationInput').value;
 
-    console.log('Item a ser atualizado:', item, quantity, location); // Log de depuração
+    alert('Item a ser atualizado: ' + item + ', Quantidade: ' + quantity + ', Local: ' + location); // Alerta de depuração
 
     try {
         const response = await fetchWithTokenRefresh(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A:C:batchUpdate`, {
@@ -356,19 +357,21 @@
             })
         });
 
+        alert('Resposta da atualização: ' + response); // Alerta de depuração
+
         if (response.ok) {
             loadItems();
             closeEditContainer();
         } else {
-            console.log('Erro ao atualizar item: ' + response.statusText);
+            alert('Erro ao atualizar item: ' + response.statusText);
         }
     } catch (error) {
-        console.log('Erro: ' + error.message);
+        alert('Erro: ' + error.message);
     }
 }
 
 
-         function deleteItem(item) {
+        async function deleteItem(item) {
             try {
                 const response = await fetchWithTokenRefresh(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:D:batchClear`, {
                     method: 'POST',
