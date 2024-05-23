@@ -330,7 +330,7 @@
        let filterActive = true;
 
 function toggleShowAll() {
-     filterActive = filterActive; // Alternar o estado do filtro
+     filterActive = !filterActive; // Alternar o estado do filtro
     loadItems();
 }
 
@@ -341,7 +341,7 @@ async function loadItems() {
     if (response && response.ok) {
         const data = await response.json();
         const items = data.values || [];
-        const filteredItems = filterActive ? (showAll ? items : items.filter(item => parseInt(item[1], 10) > 0)) : items;
+        const filteredItems = filterActive ? (showAll ? items : items.filter(item => parseInt(item[1], 100) > 0)) : items;
         displayItems(filteredItems);
     } else {
         console.error('Erro ao carregar itens');
