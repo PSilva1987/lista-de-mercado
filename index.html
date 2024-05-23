@@ -268,7 +268,8 @@
 
             if (response.status === 401) {
                 // Token expirado, redirecionar para login
-                const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${CLIENT_ID}&redirect_uri=${                const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=token&scope=${SCOPES}`;
+                            
+                const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=token&scope=${SCOPES}`;
                 window.location.href = authUrl;
             }
 
@@ -372,4 +373,3 @@
     </script>
 </body>
 </html>
-
