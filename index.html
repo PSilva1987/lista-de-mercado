@@ -430,6 +430,7 @@ async function fetchItem(rowIndex) {
 
         function closeEditContainer() {
             document.getElementById('editContainer').classList.remove('active');
+            loadItems(); // Mostrar todos os itens após fechar o contêiner de edição
         }
 
         window.onload = handleAuthResponse;
