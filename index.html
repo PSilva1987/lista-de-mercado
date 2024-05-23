@@ -325,10 +325,10 @@
             }
         }
 
-        async function updateItem() {
-    console.log('Função updateItem chamada'); // Log de depuração
+       async function updateItem() {
+    alert('Função updateItem chamada'); // Debug
     if (!selectedItem) {
-        console.log('Nenhum item selecionado para atualização');
+        alert('Nenhum item selecionado para atualização'); // Debug
         return;
     }
 
@@ -336,7 +336,7 @@
     const quantity = document.getElementById('editQuantityInput').value;
     const location = document.getElementById('editLocationInput').value;
 
-    console.log('Item a ser atualizado:', item, quantity, location); // Log de depuração
+    alert('Item a ser atualizado:' + item + ', quantidade:' + quantity + ', localização:' + location); // Debug
 
     try {
         // Carrega todos os itens da planilha
@@ -349,7 +349,7 @@
         // Procura o item na lista de itens carregados
         const index = data.values.findIndex(row => row[0] === item);
         if (index === -1) {
-            console.log('Item não encontrado na planilha');
+            alert('Item não encontrado na planilha'); // Debug
             return;
         }
 
@@ -370,10 +370,10 @@
             loadItems();
             closeEditContainer();
         } else {
-            console.log('Erro ao atualizar item: ' + updateResponse.statusText);
+            alert('Erro ao atualizar item: ' + updateResponse.statusText); // Debug
         }
     } catch (error) {
-        console.log('Erro: ' + error.message);
+        alert('Erro: ' + error.message); // Debug
     }
 }
 
