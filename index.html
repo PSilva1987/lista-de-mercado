@@ -338,36 +338,45 @@
 
     console.log('Item a ser atualizado:', item, quantity, location); // Log de depuração
 
-    // Suponha que você tenha uma função getRowNumber que retorna o número da linha do item
-    const rowNumber = await getRowNumber(item);
-
     try {
-        const response = await fetchWithTokenRefresh(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A${rowNumber}:C${rowNumber}:batchUpdate`, {
-            method: 'POST',
+        // Carrega todos os itens da planilha
+        const response = await fetchWithTokenRefresh(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A:C`);
+        if (!response.ok) {
+            throw new Error('Erro ao carregar os itens da planilha: ' + response.statusText);
+        }
+        const data = await response.json();
+
+        // Procura o item na lista de itens carregados
+        const index = data.values.findIndex(row => row[0] === item);
+        if (index === -1) {
+            console.log('Item não encontrado na planilha');
+            return;
+        }
+
+        // Atualiza apenas a linha correspondente ao item
+        const range = `${SHEET_NAME}!A${index + 1}:C${index + 1}`;
+        const updateResponse = await fetchWithTokenRefresh(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?valueInputOption=RAW`, {
+            method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                data: [
-                    {
-                        range: `${SHEET_NAME}!A${rowNumber}:C${rowNumber}`,
-                        values: [[item, quantity, location]]
-                    }
-                ],
-                valueInputOption: 'RAW'
+                range,
+                values: [[item, quantity, location]]
             })
         });
 
-        if (response.ok) {
+        if (updateResponse.ok) {
             loadItems();
             closeEditContainer();
         } else {
-            console.log('Erro ao atualizar item: ' + response.statusText);
+            console.log('Erro ao atualizar item: ' + updateResponse.statusText);
         }
     } catch (error) {
         console.log('Erro: ' + error.message);
     }
 }
+
 
         function openEditContainer(item, quantity, location) {
             selectedItem = item;
