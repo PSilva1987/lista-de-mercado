@@ -375,35 +375,37 @@
             document.getElementById('editContainer').classList.add('active');
         }
 
-        async function updateItem() {
-            const item = document.getElementById('editItemInput').value;
-            const quantity = document.getElementById('editQuantityInput').value;
-            const location = document.getElementById('editLocationInput').value;
+       async function updateItem() {
+    const item = document.getElementById('editItemInput').value;
+    const quantity = document.getElementById('editQuantityInput').value;
+    const location = document.getElementById('editLocationInput').value;
 
-            if (item && quantity && location && selectedItem !== null) {
-                const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A${selectedItem + 2}:C${selectedItem + 2}?valueInputOption=USER_ENTERED`;
-                const body = JSON.stringify({
-                    values: [[item, quantity, location]]
-                });
+    if (item && quantity && location && selectedItem !== null) {
+        const rowIndex = selectedItem + 2; // Linha na planilha (começa em 2 porque os dados começam na linha 2)
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A${rowIndex}:C${rowIndex}?valueInputOption=USER_ENTERED`;
+        const body = JSON.stringify({
+            values: [[item, quantity, location]]
+        });
 
-                const response = await fetchWithTokenRefresh(url, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body
-                });
+        const response = await fetchWithTokenRefresh(url, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body
+        });
 
-                if (response && response.ok) {
-                    loadItems();
-                    closeEditContainer();
-                } else {
-                    console.error('Erro ao atualizar item');
-                }
-            } else {
-                alert('Preencha todos os campos');
-            }
+        if (response && response.ok) {
+            loadItems();
+            closeEditContainer();
+        } else {
+            console.error('Erro ao atualizar item');
         }
+    } else {
+        alert('Preencha todos os campos');
+    }
+}
+
 
         function closeEditContainer() {
             document.getElementById('editContainer').classList.remove('active');
