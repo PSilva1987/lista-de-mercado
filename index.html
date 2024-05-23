@@ -338,35 +338,14 @@
             });
         }
 
-        async function addItem() {
-            const itemInput = document.getElementById('addItemInput').value;
-            const quantityInput = document.getElementById('addQuantityInput').value;
-            const locationInput = document.getElementById('addLocationInput').value;
-
-            if (itemInput && quantityInput && locationInput) {
-                const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:C:append?valueInputOption=USER_ENTERED`;
-                const body = JSON.stringify({
-                    values: [[itemInput, quantityInput, locationInput]]
-                });
-
-                const response = await fetchWithTokenRefresh(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body
-                });
-
-                if (response && response.ok) {
-                    loadItems();
-                    closeAddContainer();
-                } else {
-                    console.error('Erro ao adicionar item');
-                }
-            } else {
-                alert('Preencha todos os campos');
-            }
-        }
+        async function editItem(index, item, quantity, location) {
+    selectedItem = index;
+    document.getElementById('editItemInput').value = item;
+    document.getElementById('editQuantityInput').value = quantity;
+    document.getElementById('editLocationInput').value = location;
+    toggleShowAll(); // Mostrar todos os itens antes de abrir o container de edição
+    document.getElementById('editContainer').classList.add('active');
+}
 
         function editItem(index, item, quantity, location) {
             toggleShowAll(); // Mostrar todos os itens antes de abrir o container de edição
