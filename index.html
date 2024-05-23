@@ -338,8 +338,11 @@
 
     console.log('Item a ser atualizado:', item, quantity, location); // Log de depuração
 
+    // Suponha que você tenha uma função getRowNumber que retorna o número da linha do item
+    const rowNumber = await getRowNumber(item);
+
     try {
-        const response = await fetchWithTokenRefresh(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:C:batchUpdate`, {
+        const response = await fetchWithTokenRefresh(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A${rowNumber}:C${rowNumber}:batchUpdate`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -347,7 +350,7 @@
             body: JSON.stringify({
                 data: [
                     {
-                        range: `${SHEET_NAME}!A2:C`,
+                        range: `${SHEET_NAME}!A${rowNumber}:C${rowNumber}`,
                         values: [[item, quantity, location]]
                     }
                 ],
@@ -365,7 +368,6 @@
         console.log('Erro: ' + error.message);
     }
 }
-
 
         function openEditContainer(item, quantity, location) {
             selectedItem = item;
