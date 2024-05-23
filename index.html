@@ -276,18 +276,19 @@
         }
 
         async function loadItems() {
-            const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:C`;
-            const response = await fetchWithTokenRefresh(url);
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:C`;
+    const response = await fetchWithTokenRefresh(url);
 
-            if (response && response.ok) {
-                const data = await response.json();
-                const items = data.values || [];
-                const filteredItems = showAll ? items : items.filter(item => parseInt(item[1], 10) > 0);
-                displayItems(filteredItems);
-            } else {
-                console.error('Erro ao carregar itens');
-            }
-        }
+    if (response && response.ok) {
+        const data = await response.json();
+        const items = data.values || [];
+        const filteredItems = showAll ? items : items.filter(item => showAll || parseInt(item[1], 10) > 0);
+        displayItems(filteredItems);
+    } else {
+        console.error('Erro ao carregar itens');
+    }
+}
+
 
         function displayItems(items) {
             const itemList = document.getElementById('itemList');
