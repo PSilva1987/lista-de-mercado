@@ -396,7 +396,7 @@
         });
 
         if (response && response.ok) {
-            loadItems();
+            loadItems(); // Carregar os itens novamente após a edição
             closeEditContainer();
         } else {
             console.error('Erro ao atualizar item');
