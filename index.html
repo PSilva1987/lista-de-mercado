@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lista de Mercado</title>
+    <link rel="icon" href="https://img.icons8.com/ios-filled/50/000000/shopping-cart.png" type="image/png">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -265,8 +266,9 @@
             let response = await fetch(url, options);
 
             if (response.status === 401) {
-                console.error('Token expirado ou inválido.');
-                return null;
+                // Token expirado, redirecionar para login
+                const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=token&scope=${SCOPES}`;
+                window.location.href = authUrl;
             }
 
             return response;
@@ -279,7 +281,7 @@
             if (response && response.ok) {
                 const data = await response.json();
                 const items = data.values || [];
-                const filteredItems = showAll ? items : items.filter(item => item[1] > 0);
+                const filteredItems = showAll ? items : items.filter(item => parseInt(item[1], 10) > 0);
                 displayItems(filteredItems);
             } else {
                 console.error('Erro ao carregar itens');
