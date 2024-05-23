@@ -6,7 +6,7 @@
     <title>Lista de Mercado</title>
     <style>
         /* O estilo permanece o mesmo */
-body {
+         body {
             font-family: Arial, sans-serif;
             background-color: #f0f0f0;
             margin: 0;
@@ -204,7 +204,7 @@ body {
             <input type="text" id="editItemInput" placeholder="Item">
             <input type="number" id="editQuantityInput" placeholder="Quantidade">
             <input type="text" id="editLocationInput" placeholder="Local">
-            <button onclick="updateItem()">Atualizar</button>
+            <button id="updateButton">Atualizar</button>
             <button onclick="closeEditContainer()">Cancelar</button>
         </div>
         <div class="add-container" id="addContainer">
@@ -325,35 +325,48 @@ body {
             }
         }
 
-        function updateItem() {
-            const name = document.getElementById('editItemInput').value;
+        async function updateItem() {
+            console.log('Função updateItem chamada'); // Log de depuração
+            if (!selectedItem) {
+                console.log('Nenhum item selecionado para atualização');
+                return;
+            }
+
+            const item = document.getElementById('editItemInput').value;
             const quantity = document.getElementById('editQuantityInput').value;
             const location = document.getElementById('editLocationInput').value;
 
-            if (selectedItem && name && quantity && location) {
-                const values = [[name, quantity, location]];
-                fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A${selectedItem.id}:C${selectedItem.id}?valueInputOption=USER_ENTERED&access_token=${ACCESS_TOKEN}`, {
-                    method: 'PUT',
+            console.log('Item a ser atualizado:', item, quantity, location); // Log de depuração
+
+            try {
+                const response = await fetchWithTokenRefresh(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:C:batchUpdate`, {
+                    method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
+                        'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ values })
-                })
-                    .then(response => response.json())
-                    .then(() => {
-                        loadItems();
-                        closeEditContainer();
+                    body: JSON.stringify({
+                        data: [
+                            {
+                                range: `${SHEET_NAME}!A2:C`,
+                                values: [[item, quantity, location]]
+                            }
+                        ],
+                        valueInputOption: 'RAW'
                     })
-                    .catch(error => {
-                        console.error('Erro ao atualizar o item:', error);
-                        if (error.status === 401) {
-                            refreshAccessToken(updateItem);
-                        }
-                    });
+                });
+
+                if (response.ok) {
+                    loadItems();
+                    closeEditContainer();
+                } else {
+                    console.log('Erro ao atualizar item: ' + response.statusText);
+                }
+            } catch (error) {
+                console.log('Erro: ' + error.message);
             }
         }
 
-         function deleteItem(item) {
+        async function deleteItem(item) {
             try {
                 const response = await fetchWithTokenRefresh(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:D:batchClear`, {
                     method: 'POST',
