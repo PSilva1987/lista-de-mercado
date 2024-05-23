@@ -424,6 +424,19 @@ async function fetchItem(rowIndex) {
     }
 }
 
+async function fetchItem(rowIndex) {
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A${rowIndex}:C${rowIndex}`;
+    const response = await fetchWithTokenRefresh(url);
+    if (response && response.ok) {
+        const data = await response.json();
+        const item = data.values && data.values[0];
+        return item;
+    } else {
+        console.error('Erro ao carregar item');
+        return null;
+    }
+}
+
 
         function closeEditContainer() {
             document.getElementById('editContainer').classList.remove('active');
