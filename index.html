@@ -369,11 +369,11 @@
         }
 
         function editItem(index, item, quantity, location) {
+            toggleShowAll(); // Mostrar todos os itens antes de abrir o container de edição
             selectedItem = index;
             document.getElementById('editItemInput').value = item;
             document.getElementById('editQuantityInput').value = quantity;
             document.getElementById('editLocationInput').value = location;
-            toggleShowAll(); // Mostrar todos os itens antes de abrir o container de edição
             document.getElementById('editContainer').classList.add('active');
         }
 
