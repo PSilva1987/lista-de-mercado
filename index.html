@@ -295,39 +295,34 @@
             }
         }
 
-        async function addItem() {
-            const item = document.getElementById('addItemInput').value;
-            const quantity = document.getElementById('addQuantityInput').value;
-            const location = document.getElementById('addLocationInput').value;
+       async function addItem() {
+    const item = document.getElementById('addItemInput').value;
+    const quantity = document.getElementById('addQuantityInput').value;
+    const location = document.getElementById('addLocationInput').value;
 
-            try {
-                const response = await fetchWithTokenRefresh(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:D:append?valueInputOption=RAW`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        values: [
-                            [item, quantity, location]
-                        ]
-                    })
-                });
+    try {
+        const response = await fetchWithTokenRefresh(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:D:append?valueInputOption=RAW`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                values: [
+                    [item, quantity, location]
+                ]
+            })
+        });
 
-                if (response.ok) {
-                    loadItems();
-                    closeAddContainer();
-                    document.getElementById('addItemInput').value = '';
-                    document.getElementById('addQuantityInput').value = '';
-                    document.getElementById('addLocationInput').value = '';
-                } else {
-                    console.log('Erro ao adicionar item: ' + response.statusText);
-                }
-            } catch (error) {
-                console.log('Erro: ' + error.message);
-            }
-        }
+        if (response.ok) {
+            loadItems();
+            closeAddContainer();
+            document.getElementById('addItemInput').value = '';
+            document.getElementById('addQuantityInput').value = '';
+            document.getElementById('addLocationInput').value = '';
+        } else {
+            alert('Erro ao adicionar item: ' + response.statusText
 
-      async function updateItem() {
+     async function updateItem() {
     if (!selectedItem) {
         alert('Nenhum item selecionado para atualização');
         return;
@@ -338,13 +333,19 @@
     const location = document.getElementById('editLocationInput').value;
 
     try {
-        const response = await fetchWithTokenRefresh(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:C`, {
-            method: 'PUT',
+        const response = await fetchWithTokenRefresh(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:C:batchUpdate`, {
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                values: [[item, quantity, location]]
+                data: [
+                    {
+                        range: `${SHEET_NAME}!A2:C`,
+                        values: [[item, quantity, location]]
+                    }
+                ],
+                valueInputOption: 'RAW'
             })
         });
 
@@ -358,7 +359,6 @@
         alert('Erro: ' + error.message);
     }
 }
-
 
         async function deleteItem(item) {
             try {
