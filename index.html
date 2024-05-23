@@ -327,8 +327,7 @@
             }
         }
 
-       async function updateItem() {
-    alert('Função updateItem chamada'); // Alerta de depuração
+      async function updateItem() {
     if (!selectedItem) {
         alert('Nenhum item selecionado para atualização');
         return;
@@ -338,26 +337,16 @@
     const quantity = document.getElementById('editQuantityInput').value;
     const location = document.getElementById('editLocationInput').value;
 
-    alert('Item a ser atualizado: ' + item + ', Quantidade: ' + quantity + ', Local: ' + location); // Alerta de depuração
-
     try {
-        const response = await fetchWithTokenRefresh(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A:C:batchUpdate`, {
-            method: 'POST',
+        const response = await fetchWithTokenRefresh(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:C`, {
+            method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                data: [
-                    {
-                        range: `${SHEET_NAME}!A2:C`, // Ajustado para apenas 3 colunas
-                        values: [[item, quantity, location]]
-                    }
-                ],
-                valueInputOption: 'RAW'
+                values: [[item, quantity, location]]
             })
         });
-
-        alert('Resposta da atualização: ' + response); // Alerta de depuração
 
         if (response.ok) {
             loadItems();
