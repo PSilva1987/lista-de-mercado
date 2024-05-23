@@ -180,6 +180,11 @@
         .checked-item span {
             text-decoration: line-through;
         }
+
+        /* Estilo para alterar a cor da linha */
+        .highlight {
+            background-color: #ccffcc; /* Verde claro */
+        }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
@@ -204,7 +209,7 @@
             <input type="text" id="editItemInput" placeholder="Item">
             <input type="number" id="editQuantityInput" placeholder="Quantidade">
             <input type="text" id="editLocationInput" placeholder="Local">
-            <button id="updateButton">Atualizar</button>
+            <button id="updateButton" onclick="updateItem()">Atualizar</button>
             <button onclick="closeEditContainer()">Cancelar</button>
         </div>
         <div class="add-container" id="addContainer">
@@ -225,6 +230,7 @@
         const SHEET_NAME = 'Lista'; // Substitua pelo nome da aba da sua planilha
         let ACCESS_TOKEN = null;
         let selectedItem = null;
+        let showAll = false;  // Controle para exibir todos os itens ou apenas os com quantidade > 0
 
         document.getElementById('loginButton').addEventListener('click', () => {
             const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=token&scope=${SCOPES}`;
@@ -246,149 +252,64 @@
 
         async function fetchWithTokenRefresh(url, options = {}) {
             if (!ACCESS_TOKEN) {
-                throw new Error('Token de acesso não disponível');
+                console.error('Token de acesso não disponível');
+                return null;
             }
 
-            options.headers = {
-                ...options.headers,
-                Authorization: `Bearer ${ACCESS_TOKEN}`,
-            };
+            if (!options.headers) {
+                options.headers = {};
+            }
+            options.headers['Authorization'] = `Bearer ${ACCESS_TOKEN}`;
 
             let response = await fetch(url, options);
 
+            // Se o token expirou, tentar atualizar o token aqui (implemente a lógica de atualização de token, se aplicável)
             if (response.status === 401) {
-                console.log('Token expirado ou inválido');
-                // Atualização do token de acesso (omitir se não houver refresh token)
+                console.error('Token expirado ou inválido.');
+                return null;
             }
 
             return response;
         }
 
         async function loadItems() {
-            try {
-                let response = await fetchWithTokenRefresh(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:C`);
-                if (response.ok) {
-                    const data = await response.json();
-                    const rows = data.values || [];
-                    constitemList = document.getElementById('itemList');
-                    itemList.innerHTML = '';
-                    rows.forEach(row => {
-                        const listItem = document.createElement('li');
-                        listItem.innerHTML = `
-                            <div>
-                                <strong>Item:</strong> ${row[0]}<br>
-                                <strong>Quantidade:</strong> ${row[1]}<br>
-                                <strong>Local:</strong> ${row[2]}
-                            </div>
-                            <button onclick="openEditContainer('${row[0]}', ${row[1]}, '${row[2]}')">Editar</button>
-                            <button onclick="deleteItem('${row[0]}')">Excluir</button>
-                        `;
-                        itemList.appendChild(listItem);
-                    });
-                } else {
-                    console.log('Erro ao carregar os itens: ' + response.statusText);
-                }
-            } catch (error) {
-                console.log('Erro: ' + error.message);
+            const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:C`;
+            const response = await fetchWithTokenRefresh(url);
+
+            if (response && response.ok) {
+                const data = await response.json();
+                const items = data.values || [];
+                const filteredItems = showAll ? items : items.filter(item => item[1] > 0); // Filtro de quantidade
+                displayItems(filteredItems);
+            } else {
+                console.error('Erro ao carregar itens');
             }
         }
 
-        async function addItem() {
-            const item = document.getElementById('addItemInput').value;
-            const quantity = document.getElementById('addQuantityInput').value;
-            const location = document.getElementById('addLocationInput').value;
+        function displayItems(items) {
+            const itemList = document.getElementById('itemList');
+            itemList.innerHTML = '';
+            items.forEach((item, index) => {
+                const listItem = document.createElement('li');
+                listItem.innerHTML = `
+                    <input type="checkbox" onchange="toggleHighlight(this, ${index})">
+                    <div>
+                        <span>${item[0]}</span> - <span>${item[1]}</span> - <span>${item[2]}</span>
+                    </div>
+                    <button onclick="editItem(${index}, '${item[0]}', ${item[1]}, '${item[2]}')">Editar</button>
+                    <button onclick="deleteItem(${index})">Excluir</button>
+                `;
+                itemList.appendChild(listItem);
+            });
+        }
 
-            try {
-                const response = await fetchWithTokenRefresh(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:D:append?valueInputOption=RAW`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        values: [
-                            [item, quantity, location]
-                        ]
-                    })
-                });
-
-                if (response.ok) {
-                    loadItems();
-                    closeAddContainer();
-                    document.getElementById('addItemInput').value = '';
-                    document.getElementById('addQuantityInput').value = '';
-                    document.getElementById('addLocationInput').value = '';
-                } else {
-                    console.log('Erro ao adicionar item: ' + response.statusText);
-                }
-            } catch (error) {
-                console.log('Erro: ' + error.message);
+        function toggleHighlight(checkbox, index) {
+            const listItem = checkbox.parentElement;
+            if (checkbox.checked) {
+                listItem.classList.add('highlight');
+            } else {
+                listItem.classList.remove('highlight');
             }
-        }
-
-       async function updateItem() {
-    alert('Função updateItem chamada'); // Debug
-    if (!selectedItem) {
-        alert('Nenhum item selecionado para atualização'); // Debug
-        return;
-    }
-
-    const item = selectedItem;
-    const quantity = document.getElementById('editQuantityInput').value;
-    const location = document.getElementById('editLocationInput').value;
-
-    alert('Item a ser atualizado:' + item + ', quantidade:' + quantity + ', localização:' + location); // Debug
-
-    try {
-        // Carrega todos os itens da planilha
-        const response = await fetchWithTokenRefresh(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A:C`);
-        if (!response.ok) {
-            throw new Error('Erro ao carregar os itens da planilha: ' + response.statusText);
-        }
-        const data = await response.json();
-
-        // Procura o item na lista de itens carregados
-        const index = data.values.findIndex(row => row[0] === item);
-        if (index === -1) {
-            alert('Item não encontrado na planilha'); // Debug
-            return;
-        }
-
-        // Atualiza apenas a linha correspondente ao item
-        const range = `${SHEET_NAME}!A${index + 1}:C${index + 1}`;
-        const updateResponse = await fetchWithTokenRefresh(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?valueInputOption=RAW`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                range,
-                values: [[item, quantity, location]]
-            })
-        });
-
-        if (updateResponse.ok) {
-            loadItems();
-            closeEditContainer();
-        } else {
-            alert('Erro ao atualizar item: ' + updateResponse.statusText); // Debug
-        }
-    } catch (error) {
-        alert('Erro: ' + error.message); // Debug
-    }
-}
-
-
-        function openEditContainer(item, quantity, location) {
-            selectedItem = item;
-            document.getElementById('editItemInput').value = item;
-            document.getElementById('editQuantityInput').value = quantity;
-            document.getElementById('editLocationInput').value = location;
-            document.getElementById('editContainer').classList.add('active');
-        }
-
-        function closeEditContainer() {
-            selectedItem = null;
-            document.getElementById('editContainer').classList.remove('active');
         }
 
         function openAddContainer() {
@@ -402,33 +323,106 @@
         function toggleShowAll() {
             showAll = !showAll;
             loadItems();
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+                const listItem = checkbox.parentElement;
+                listItem.classList.remove('highlight');
+            });
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-    handleAuthResponse();
-    document.getElementById('updateButton').addEventListener('click', updateItem);
-});
+        async function addItem() {
+            const itemInput = document.getElementById('addItemInput').value;
+            const quantityInput = document.getElementById('addQuantityInput').value;
+            const locationInput = document.getElementById('addLocationInput').value;
 
+            if (itemInput && quantityInput && locationInput) {
+                const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:C:append?valueInputOption=USER_ENTERED`;
+                const body = JSON.stringify({
+                    values: [[itemInput, quantityInput, locationInput]]
+                });
+
+                const response = await fetchWithTokenRefresh(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body
+                });
+
+                if (response && response.ok) {
+                    loadItems();
+                    closeAddContainer();
+                } else {
+                    console.error('Erro ao adicionar item');
+                }
+            } else {
+                alert('Preencha todos os campos');
+            }
+        }
+
+        function editItem(index, item, quantity, location) {
+            selectedItem = index;
+            document.getElementById('editItemInput').value = item;
+            document.getElementById('editQuantityInput').value = quantity;
+            document.getElementById('editLocationInput').value = location;
+            document.getElementById('editContainer').classList.add('active');
+        }
+
+        async function updateItem() {
+            const item = document.getElementById('editItemInput').value;
+            const quantity = document.getElementById('editQuantityInput').value;
+            const location = document.getElementById('editLocationInput').value;
+
+            if (item && quantity && location && selectedItem !== null) {
+                const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A${selectedItem + 2}:C${selectedItem + 2}?valueInputOption=USER_ENTERED`;
+                const body = JSON.stringify({
+                    values: [[item, quantity, location]]
+                });
+
+                const response = await fetchWithTokenRefresh(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body
+                });
+
+                if (response && response.ok) {
+                    loadItems();
+                    closeEditContainer();
+                } else {
+                    console.error('Erro ao atualizar item');
+                }
+            } else {
+                alert('Preencha todos os campos');
+            }
+        }
+
+        async function deleteItem(index) {
+            // Implementar a lógica de exclusão de item na planilha, se aplicável
+            alert('Função de exclusão de item não implementada');
+        }
+
+        function closeEditContainer() {
+            document.getElementById('editContainer').classList.remove('active');
+        }
+
+        window.onload = handleAuthResponse;
 
         function filterItems() {
-            const searchInput = document.getElementById('searchInput').value.toLowerCase();
-            const items = document.getElementById('itemList').getElementsByTagName('li');
-            
-            Array.from(items).forEach(item => {
-                const itemName = item.querySelector('div').textContent.toLowerCase();
-                if (itemName.includes(searchInput)) {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const items = document.querySelectorAll('#itemList li');
+
+            items.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
                     item.style.display = '';
                 } else {
                     item.style.display = 'none';
                 }
             });
         }
-
-        document.addEventListener('DOMContentLoaded', handleAuthResponse);
-
-        // Adiciona o evento de clique ao botão de atualização
-         document.getElementById('updateButton').addEventListener('click', updateItem);
     </script>
 </body>
 </html>
-
