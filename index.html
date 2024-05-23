@@ -265,7 +265,7 @@
             return response;
         }
 
-        async function loadItems() {
+         function loadItems() {
             try {
                 let response = await fetchWithTokenRefresh(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:C`);
                 if (response.ok) {
@@ -294,7 +294,7 @@
             }
         }
 
-        async function addItem() {
+        function addItem() {
             const item = document.getElementById('addItemInput').value;
             const quantity = document.getElementById('addQuantityInput').value;
             const location = document.getElementById('addLocationInput').value;
@@ -326,7 +326,7 @@
             }
         }
 
-       async function updateItem() {
+        function updateItem() {
     console.log('Função updateItem chamada'); // Log de depuração
     if (!selectedItem) {
         console.log('Nenhum item selecionado para atualização');
@@ -368,7 +368,7 @@
 }
 
 
-        async function deleteItem(item) {
+         function deleteItem(item) {
             try {
                 const response = await fetchWithTokenRefresh(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:D:batchClear`, {
                     method: 'POST',
