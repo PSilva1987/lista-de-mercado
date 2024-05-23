@@ -327,17 +327,27 @@
             document.getElementById('addContainer').classList.remove('active');
         }
 
-        function toggleShowAll() {
-            showAll = !showAll;
-            loadItems();
-            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = false;
-                const listItem = checkbox.parentElement;
-                listItem.classList.remove('highlight');
-                listItem.querySelector('div').classList.remove('checked-item');
-            });
-        }
+       let filterActive = true;
+
+function toggleShowAll() {
+    filterActive = !filterActive;
+    loadItems();
+}
+
+async function loadItems() {
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:C`;
+    const response = await fetchWithTokenRefresh(url);
+
+    if (response && response.ok) {
+        const data = await response.json();
+        const items = data.values || [];
+        const filteredItems = filterActive ? (showAll ? items : items.filter(item => parseInt(item[1], 10) > 0)) : items;
+        displayItems(filteredItems);
+    } else {
+        console.error('Erro ao carregar itens');
+    }
+}
+
 
         async function editItem(index, item, quantity, location) {
     selectedItem = index;
