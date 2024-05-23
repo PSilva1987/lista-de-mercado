@@ -224,6 +224,7 @@
         <button id="loginButton">Login com Google</button>
     </div>
 
+    
     <script>
         const CLIENT_ID = '324306023186-fpmafcv82trtnulosg6c8upv5r9udesi.apps.googleusercontent.com';
         const REDIRECT_URI = 'https://psilva1987.github.io/lista-de-mercado/';
@@ -375,7 +376,7 @@
             document.getElementById('editContainer').classList.add('active');
         }
 
-       async function updateItem() {
+      async function updateItem() {
     const item = document.getElementById('editItemInput').value;
     const quantity = document.getElementById('editQuantityInput').value;
     const location = document.getElementById('editLocationInput').value;
@@ -396,13 +397,30 @@
         });
 
         if (response && response.ok) {
-            loadItems(); // Carregar os itens novamente após a edição
+            // Carregar apenas o item editado, ignorando o filtro
+            const editedItem = await fetchItem(rowIndex);
+            if (editedItem) {
+                displayItems([editedItem]);
+            }
             closeEditContainer();
         } else {
             console.error('Erro ao atualizar item');
         }
     } else {
         alert('Preencha todos os campos');
+    }
+}
+
+async function fetchItem(rowIndex) {
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A${rowIndex}:C${rowIndex}`;
+    const response = await fetchWithTokenRefresh(url);
+    if (response && response.ok) {
+        const data = await response.json();
+        const item = data.values && data.values[0];
+        return item;
+    } else {
+        console.error('Erro ao carregar item');
+        return null;
     }
 }
 
