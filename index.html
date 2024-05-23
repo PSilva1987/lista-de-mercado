@@ -204,7 +204,7 @@
             <input type="text" id="editItemInput" placeholder="Item">
             <input type="number" id="editQuantityInput" placeholder="Quantidade">
             <input type="text" id="editLocationInput" placeholder="Local">
-            <button onclick="updateItem()">Atualizar</button>
+            <button id="updateButton">Atualizar</button>
             <button onclick="closeEditContainer()">Cancelar</button>
         </div>
         <div class="add-container" id="addContainer">
@@ -395,6 +395,12 @@
             showAll = !showAll;
             loadItems();
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+    handleAuthResponse();
+    document.getElementById('updateButton').addEventListener('click', updateItem);
+});
+
 
         function filterItems() {
             const searchInput = document.getElementById('searchInput').value.toLowerCase();
