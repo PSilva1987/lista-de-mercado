@@ -204,9 +204,7 @@
             <input type="text" id="editItemInput" placeholder="Item">
             <input type="number" id="editQuantityInput" placeholder="Quantidade">
             <input type="text" id="editLocationInput" placeholder="Local">
-           
-<button id="updateButton">Atualizar</button>
-
+            <button onclick="updateItem()">Atualizar</button>
             <button onclick="closeEditContainer()">Cancelar</button>
         </div>
         <div class="add-container" id="addContainer">
@@ -295,70 +293,78 @@
             }
         }
 
-       async function addItem() {
-    const item = document.getElementById('addItemInput').value;
-    const quantity = document.getElementById('addQuantityInput').value;
-    const location = document.getElementById('addLocationInput').value;
+        async function addItem() {
+            const item = document.getElementById('addItemInput').value;
+            const quantity = document.getElementById('addQuantityInput').value;
+            const location = document.getElementById('addLocationInput').value;
 
-    try {
-        const response = await fetchWithTokenRefresh(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:D:append?valueInputOption=RAW`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                values: [
-                    [item, quantity, location]
-                ]
-            })
-        });
+            try {
+                const response = await fetchWithTokenRefresh(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:D:append?valueInputOption=RAW`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        values: [
+                            [item, quantity, location]
+                        ]
+                    })
+                });
 
-        if (response.ok) {
-            loadItems();
-            closeAddContainer();
-            document.getElementById('addItemInput').value = '';
-            document.getElementById('addQuantityInput').value = '';
-            document.getElementById('addLocationInput').value = '';
-        } else {
-            alert('Erro ao adicionar item: ' + response.statusText
-
-     async function updateItem() {
-    if (!selectedItem) {
-        alert('Nenhum item selecionado para atualização');
-        return;
-    }
-
-    const item = document.getElementById('editItemInput').value;
-    const quantity = document.getElementById('editQuantityInput').value;
-    const location = document.getElementById('editLocationInput').value;
-
-    try {
-        const response = await fetchWithTokenRefresh(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:C:batchUpdate`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                data: [
-                    {
-                        range: `${SHEET_NAME}!A2:C`,
-                        values: [[item, quantity, location]]
-                    }
-                ],
-                valueInputOption: 'RAW'
-            })
-        });
-
-        if (response.ok) {
-            loadItems();
-            closeEditContainer();
-        } else {
-            alert('Erro ao atualizar item: ' + response.statusText);
+                if (response.ok) {
+                    loadItems();
+                    closeAddContainer();
+                    document.getElementById('addItemInput').value = '';
+                    document.getElementById('addQuantityInput').value = '';
+                    document.getElementById('addLocationInput').value = '';
+                } else {
+                    console.log('Erro ao adicionar item: ' + response.statusText);
+                }
+            } catch (error) {
+                console.log('Erro: ' + error.message);
+            }
         }
-    } catch (error) {
-        alert('Erro: ' + error.message);
-    }
-}
+
+        async function updateItem() {
+            console.log('Função updateItem chamada'); // Log de depuração
+            if (!selectedItem) {
+                console.log('Nenhum item selecionado para atualização');
+                return;
+            }
+
+            const item = document.getElementById('editItemInput').value;
+            const quantity = document.getElementById('editQuantityInput').value;
+            const location = document.getElementById('editLocationInput').value;
+
+            console.log('Item a ser atualizado:', item, quantity, location); // Log de depuração
+
+            try {
+                const response = await fetchWithTokenRefresh(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:C:batchUpdate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        data: [
+                            {
+                                range: `${SHEET_NAME}!A2:C`,
+                                values: [[item, quantity, location]]
+                            }
+                        ],
+                        valueInputOption: 'RAW'
+                    })
+                });
+
+                if (response.ok) {
+                    loadItems();
+                    closeEditContainer();
+                } else {
+                    console.log('Erro ao atualizar item: ' + response.statusText);
+                }
+            } catch (error) {
+                console.log('Erro: ' + error.message);
+            }
+        }
 
         async function deleteItem(item) {
             try {
