@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lista de Mercado</title>
     <style>
-        /* O estilo permanece o mesmo */
         body {
             font-family: Arial, sans-serif;
             background-color: #f0f0f0;
@@ -176,14 +175,16 @@
             color: #007BFF;
         }
 
-        /* Estilo para riscar o item da lista */
+        .highlight {
+            background-color: #ccffcc; /* Verde claro */
+        }
+
         .checked-item span {
             text-decoration: line-through;
         }
 
-        /* Estilo para alterar a cor da linha */
-        .highlight {
-            background-color: #ccffcc; /* Verde claro */
+        .bold-item span {
+            font-weight: bold;
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -226,11 +227,11 @@
         const CLIENT_ID = '324306023186-fpmafcv82trtnulosg6c8upv5r9udesi.apps.googleusercontent.com';
         const REDIRECT_URI = 'https://psilva1987.github.io/lista-de-mercado/';
         const SCOPES = 'https://www.googleapis.com/auth/spreadsheets';
-        const SHEET_ID = '1sPSsuFGyikE_QPwa0PnoVDcGg8Xykq-4N9yFqNrjyAE'; // Substitua pelo ID da sua planilha
-        const SHEET_NAME = 'Lista'; // Substitua pelo nome da aba da sua planilha
+        const SHEET_ID = '1sPSsuFGyikE_QPwa0PnoVDcGg8Xykq-4N9yFqNrjyAE';
+        const SHEET_NAME = 'Lista';
         let ACCESS_TOKEN = null;
         let selectedItem = null;
-        let showAll = false;  // Controle para exibir todos os itens ou apenas os com quantidade > 0
+        let showAll = false;
 
         document.getElementById('loginButton').addEventListener('click', () => {
             const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=token&scope=${SCOPES}`;
@@ -244,7 +245,7 @@
             if (accessToken) {
                 ACCESS_TOKEN = accessToken;
                 document.getElementById('loginButton').style.display = 'none';
-                loadItems();  // Carrega os itens da planilha
+                loadItems();
             } else {
                 console.log('Erro ao obter token de acesso');
             }
@@ -263,7 +264,6 @@
 
             let response = await fetch(url, options);
 
-            // Se o token expirou, tentar atualizar o token aqui (implemente a lógica de atualização de token, se aplicável)
             if (response.status === 401) {
                 console.error('Token expirado ou inválido.');
                 return null;
@@ -279,7 +279,7 @@
             if (response && response.ok) {
                 const data = await response.json();
                 const items = data.values || [];
-                const filteredItems = showAll ? items : items.filter(item => item[1] > 0); // Filtro de quantidade
+                const filteredItems = showAll ? items : items.filter(item => item[1] > 0);
                 displayItems(filteredItems);
             } else {
                 console.error('Erro ao carregar itens');
@@ -293,11 +293,12 @@
                 const listItem = document.createElement('li');
                 listItem.innerHTML = `
                     <input type="checkbox" onchange="toggleHighlight(this, ${index})">
-                    <div>
+                    <div class="bold-item">
                         <span>${item[0]}</span> - <span>${item[1]}</span> - <span>${item[2]}</span>
                     </div>
-                    <button onclick="editItem(${index}, '${item[0]}', ${item[1]}, '${item[2]}')">Editar</button>
-                    <button onclick="deleteItem(${index})">Excluir</button>
+                    <button onclick="editItem(${index}, '${item[0]}', ${item[1]}, '${item[2]}')">
+                        <i class="fas fa-edit"></i>
+                    </button>
                 `;
                 itemList.appendChild(listItem);
             });
@@ -307,8 +308,10 @@
             const listItem = checkbox.parentElement;
             if (checkbox.checked) {
                 listItem.classList.add('highlight');
+                listItem.querySelector('div').classList.add('checked-item');
             } else {
                 listItem.classList.remove('highlight');
+                listItem.querySelector('div').classList.remove('checked-item');
             }
         }
 
@@ -328,6 +331,7 @@
                 checkbox.checked = false;
                 const listItem = checkbox.parentElement;
                 listItem.classList.remove('highlight');
+                listItem.querySelector('div').classList.remove('checked-item');
             });
         }
 
@@ -397,11 +401,6 @@
             } else {
                 alert('Preencha todos os campos');
             }
-        }
-
-        async function deleteItem(index) {
-            // Implementar a lógica de exclusão de item na planilha, se aplicável
-            alert('Função de exclusão de item não implementada');
         }
 
         function closeEditContainer() {
