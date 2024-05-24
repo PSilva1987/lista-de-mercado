@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Mercado 2</title>
+    <title>Lista de Mercado</title>
     <link rel="icon" href="https://img.icons8.com/ios-filled/50/000000/shopping-cart.png" type="image/png">
     <style>
         body {
@@ -17,7 +17,32 @@
             height: 100vh;
         }
 
+        .login-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-container img {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 20px;
+        }
+
+        .login-container button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+        }
+
         .container {
+            display: none;
             background: #fff;
             border-radius: 10px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -191,13 +216,19 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Lista de Mercado </h1>
+    <div class="login-container" id="loginContainer">
+        <img src="https://img.icons8.com/ios-filled/100/000000/shopping-cart.png" alt="Ícone de Carrinho de Compras">
+        <h1>Faça o login para acessar a lista de mercado</h1>
+        <button id="loginButton">Login com Google</button>
+    </div>
+
+    <div class="container" id="mainContainer">
+        <h1>Lista de Mercado</h1>
         <div class="search-bar">
             <input type="text" id="searchInput" placeholder="Pesquisar por produto ou local" oninput="filterItems()">
         </div>
         <div class="bottom-buttons">
-            <button class="show-all-button" onclick="showAllItems()">Mostrar Todos</button>
+            <button class="show-all-button" onclick="toggleShowAll()">Mostrar Todos</button>
             <button class="add-button" onclick="openAddContainer()"><i class="fas fa-plus"></i></button>
         </div>
         <ul id="itemList"></ul>
@@ -221,10 +252,8 @@
             <button onclick="addItem()">Adicionar</button>
             <button onclick="closeAddContainer()">Cancelar</button>
         </div>
-        <button id="loginButton">Login com Google</button>
     </div>
 
-    
     <script>
         const CLIENT_ID = '324306023186-fpmafcv82trtnulosg6c8upv5r9udesi.apps.googleusercontent.com';
         const REDIRECT_URI = 'https://psilva1987.github.io/lista-de-mercado/';
@@ -234,7 +263,6 @@
         let ACCESS_TOKEN = null;
         let selectedItem = null;
         let showAll = false;
-        let fullItemList = [];
 
         document.getElementById('loginButton').addEventListener('click', () => {
             const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=token&scope=${SCOPES}`;
@@ -247,7 +275,8 @@
 
             if (accessToken) {
                 ACCESS_TOKEN = accessToken;
-                document.getElementById('loginButton').style.display = 'none';
+                document.getElementById('loginContainer').style.display = 'none';
+                document.getElementById('mainContainer').style.display = 'block';
                 loadItems();
             } else {
                 console.log('Erro ao obter token de acesso');
@@ -282,15 +311,17 @@
 
             if (response && response.ok) {
                 const data = await response.json();
-                fullItemList = data.values || [];
-                const filteredItems = showAll ? fullItemList : fullItemList.filter(item => parseInt(item[1], 10) > 0);
+                const items = data.values || [];
+                const filteredItems = showAll ? items : items.filter(item => parseInt(item[1], 10) > 0);
                 displayItems(filteredItems);
             } else {
                 console.error('Erro ao carregar itens');
             }
         }
 
-        function displayItems(items) {
+        // Restante do código...
+
+ function displayItems(items) {
             const itemList = document.getElementById('itemList');
             itemList.innerHTML = '';
             items.forEach((item, index) => {
@@ -398,7 +429,7 @@
             loadItems(); // Mostrar todos os itens após fechar o contêiner de edição
         }
 
-        window.onload = handleAuthResponse;
+        
 
         function filterItems() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
@@ -413,6 +444,8 @@
                 }
             });
         }
+      
+        window.onload = handleAuthResponse;
     </script>
 </body>
 </html>
