@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Mercado</title>
+    <title>Lista de Mercado 2</title>
     <link rel="icon" href="https://img.icons8.com/ios-filled/50/000000/shopping-cart.png" type="image/png">
     <style>
         body {
@@ -234,6 +234,7 @@
         let ACCESS_TOKEN = null;
         let selectedItem = null;
         let showAll = false;
+        let fullItemList = [];
 
         document.getElementById('loginButton').addEventListener('click', () => {
             const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=token&scope=${SCOPES}`;
@@ -281,8 +282,8 @@
 
             if (response && response.ok) {
                 const data = await response.json();
-                const items = data.values || [];
-                const filteredItems = showAll ? items : items.filter(item => parseInt(item[1], 10) > 0);
+                fullItemList = data.values || [];
+                const filteredItems = showAll ? fullItemList : fullItemList.filter(item => parseInt(item[1], 10) > 0);
                 displayItems(filteredItems);
             } else {
                 console.error('Erro ao carregar itens');
@@ -299,7 +300,7 @@
                     <div class="bold-item">
                         <span>${item[0]}</span> - <span>${item[1]}</span> - <span>${item[2]}</span>
                     </div>
-                    <button onclick="editItem(${index}, '${item[0]}', ${item[1]}, '${item[2]}')">
+                    <button onclick="editItem(${index})">
                         <i class="fas fa-edit"></i>
                     </button>
                 `;
@@ -331,13 +332,34 @@
             loadItems();
         }
 
-        async function editItem(index, item, quantity, location) {
-            showAllItems(); // Mostrar todos os itens antes de editar
-            selectedItem = index;
-            document.getElementById('editItemInput').value = item;
-            document.getElementById('editQuantityInput').value = quantity;
-            document.getElementById('editLocationInput').value = location;
-            document.getElementById('editContainer').classList.add('active');
+        function editItem(index) {
+            const realIndex = getRealIndex(index); // Obter o índice real do item
+            if (realIndex !== -1) {
+                const item = fullItemList[realIndex];
+                selectedItem = realIndex;
+                document.getElementById('editItemInput').value = item[0];
+                document.getElementById('editQuantityInput').value = item[1];
+                document.getElementById('editLocationInput').value = item[2];
+                document.getElementById('editContainer').classList.add('active');
+            }
+        }
+
+        function getRealIndex(filteredIndex) {
+            // Mapear o índice filtrado para o índice real
+            if (showAll) {
+                return filteredIndex;
+            } else {
+                let count = 0;
+                for (let i = 0; i < fullItemList.length; i++) {
+                    if (parseInt(fullItemList[i][1], 10) > 0) {
+                        if (count === filteredIndex) {
+                            return i;
+                        }
+                        count++;
+                    }
+                }
+            }
+            return -1;
         }
 
         async function updateItem() {
