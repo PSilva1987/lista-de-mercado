@@ -231,20 +231,25 @@
 
    <div class="container" id="mainContainer">
         <h1>Lista de Mercado </h1>
+       
         <div class="search-bar">
             <input type="text" id="searchInput" placeholder="Pesquisar por produto ou local" oninput="filterItems()">
         </div>
+       
         <div class="bottom-buttons">
             <button class="show-all-button" onclick="showAllItems()">Mostrar Todos</button>
             <button class="add-button" onclick="openAddContainer()"><i class="fas fa-plus"></i></button>
         </div>
+       
         <ul id="itemList"></ul>
+       
         <div class="input-group" id="inputGroup">
             <input type="text" id="itemInput" placeholder="Item">
             <input type="number" id="quantityInput" placeholder="Quantidade">
             <input type="text" id="locationInput" placeholder="Local">
             <button onclick="addItem()">Adicionar</button>
         </div>
+       
         <div class="edit-container" id="editContainer">
             <input type="text" id="editItemInput" placeholder="Item">
             <input type="number" id="editQuantityInput" placeholder="Quantidade">
@@ -252,6 +257,7 @@
             <button id="updateButton" onclick="updateItem()">Atualizar</button>
             <button onclick="closeEditContainer()">Cancelar</button>
         </div>
+       
         <div class="add-container" id="addContainer">
             <input type="text" id="addItemInput" placeholder="Item">
             <input type="number" id="addQuantityInput" placeholder="Quantidade">
@@ -259,7 +265,8 @@
             <button onclick="addItem()">Adicionar</button>
             <button onclick="closeAddContainer()">Cancelar</button>
         </div>
-        <button id="loginButton">Login com Google</button>
+       
+        
     </div>
 
     
