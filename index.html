@@ -197,7 +197,7 @@
             <input type="text" id="searchInput" placeholder="Pesquisar por produto ou local" oninput="filterItems()">
         </div>
         <div class="bottom-buttons">
-            <button class="show-all-button" onclick="toggleShowAll()">Mostrar Todos</button>
+            <button class="show-all-button" onclick="showAllItems()">Mostrar Todos</button>
             <button class="add-button" onclick="openAddContainer()"><i class="fas fa-plus"></i></button>
         </div>
         <ul id="itemList"></ul>
@@ -276,19 +276,18 @@
         }
 
         async function loadItems() {
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:C`;
-    const response = await fetchWithTokenRefresh(url);
+            const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:C`;
+            const response = await fetchWithTokenRefresh(url);
 
-    if (response && response.ok) {
-        const data = await response.json();
-        const items = data.values || [];
-        const filteredItems = showAll ? items : items.filter(item => showAll || parseInt(item[1], 10) > 0);
-        displayItems(filteredItems);
-    } else {
-        console.error('Erro ao carregar itens');
-    }
-}
-
+            if (response && response.ok) {
+                const data = await response.json();
+                const items = data.values || [];
+                const filteredItems = showAll ? items : items.filter(item => parseInt(item[1], 10) > 0);
+                displayItems(filteredItems);
+            } else {
+                console.error('Erro ao carregar itens');
+            }
+        }
 
         function displayItems(items) {
             const itemList = document.getElementById('itemList');
@@ -327,38 +326,13 @@
             document.getElementById('addContainer').classList.remove('active');
         }
 
-       let filterActive = true;
-
-function toggleShowAll() {
-     filterActive = !filterActive; // Alternar o estado do filtro
-    loadItems();
-}
-
-async function loadItems() {
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:C`;
-    const response = await fetchWithTokenRefresh(url);
-
-    if (response && response.ok) {
-        const data = await response.json();
-        const items = data.values || [];
-        const filteredItems = filterActive ? (showAll ? items : items.filter(item => parseInt(item[1], 10) > 0)) : items;
-        displayItems(filteredItems);
-    } else {
-        console.error('Erro ao carregar itens');
-    }
-}
-
+        function showAllItems() {
+            showAll = true;
+            loadItems();
+        }
 
         async function editItem(index, item, quantity, location) {
-    selectedItem = index;
-    document.getElementById('editItemInput').value = item;
-    document.getElementById('editQuantityInput').value = quantity;
-    document.getElementById('editLocationInput').value = location;
-    document.getElementById('editContainer').classList.add('active');
-}
-
-        function editItem(index, item, quantity, location) {
-            
+            showAllItems(); // Mostrar todos os itens antes de editar
             selectedItem = index;
             document.getElementById('editItemInput').value = item;
             document.getElementById('editQuantityInput').value = quantity;
@@ -366,67 +340,36 @@ async function loadItems() {
             document.getElementById('editContainer').classList.add('active');
         }
 
-      async function updateItem() {
-    const item = document.getElementById('editItemInput').value;
-    const quantity = document.getElementById('editQuantityInput').value;
-    const location = document.getElementById('editLocationInput').value;
+        async function updateItem() {
+            const item = document.getElementById('editItemInput').value;
+            const quantity = document.getElementById('editQuantityInput').value;
+            const location = document.getElementById('editLocationInput').value;
 
-    if (item && quantity && location && selectedItem !== null) {
-        const rowIndex = selectedItem + 2; // Linha na planilha (começa em 2 porque os dados começam na linha 2)
-        const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A${rowIndex}:C${rowIndex}?valueInputOption=USER_ENTERED`;
-        const body = JSON.stringify({
-            values: [[item, quantity, location]]
-        });
+            if (item && quantity && location && selectedItem !== null) {
+                const rowIndex = selectedItem + 2; // Linha na planilha (começa em 2 porque os dados começam na linha 2)
+                const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A${rowIndex}:C${rowIndex}?valueInputOption=USER_ENTERED`;
+                const body = JSON.stringify({
+                    values: [[item, quantity, location]]
+                });
 
-        const response = await fetchWithTokenRefresh(url, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body
-        });
+                const response = await fetchWithTokenRefresh(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body
+                });
 
-        if (response && response.ok) {
-            // Carregar apenas o item editado, ignorando o filtro
-            const editedItem = await fetchItem(rowIndex);
-            if (editedItem) {
-                displayItems([editedItem]);
+                if (response && response.ok) {
+                    loadItems();
+                    closeEditContainer();
+                } else {
+                    console.error('Erro ao atualizar item');
+                }
+            } else {
+                alert('Preencha todos os campos');
             }
-            closeEditContainer();
-        } else {
-            console.error('Erro ao atualizar item');
         }
-    } else {
-        alert('Preencha todos os campos');
-    }
-}
-
-async function fetchItem(rowIndex) {
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A${rowIndex}:C${rowIndex}`;
-    const response = await fetchWithTokenRefresh(url);
-    if (response && response.ok) {
-        const data = await response.json();
-        const item = data.values && data.values[0];
-        return item;
-    } else {
-        console.error('Erro ao carregar item');
-        return null;
-    }
-}
-
-async function fetchItem(rowIndex) {
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A${rowIndex}:C${rowIndex}`;
-    const response = await fetchWithTokenRefresh(url);
-    if (response && response.ok) {
-        const data = await response.json();
-        const item = data.values && data.values[0];
-        return item;
-    } else {
-        console.error('Erro ao carregar item');
-        return null;
-    }
-}
-
 
         function closeEditContainer() {
             document.getElementById('editContainer').classList.remove('active');
