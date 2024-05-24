@@ -446,6 +446,39 @@
             loadItems(); // Mostrar todos os itens após fechar o contêiner de edição
         }
 
+         async function addItem() {
+            const item = document.getElementById('addItemInput').value;
+            const quantity = document.getElementById('addQuantityInput').value;
+            const location = document.getElementById('addLocationInput').value;
+
+            if (item && quantity && location) {
+                const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A1:C1:append?valueInputOption=USER_ENTERED`;
+                const body = JSON.stringify({
+                    values: [[item, quantity, location]]
+                });
+
+                const response = await fetchWithTokenRefresh(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body
+                });
+
+                if (response && response.ok) {
+                    document.getElementById('addItemInput').value = '';
+                    document.getElementById('addQuantityInput').value = '';
+                    document.getElementById('addLocationInput').value = '';
+                    loadItems(); // Recarrega os itens após a adição
+                } else {
+                    console.error('Erro ao adicionar item');
+                }
+            } else {
+                alert('Preencha todos os campos');
+            }
+        }
+
+
         window.onload = handleAuthResponse;
 
         function filterItems() {
