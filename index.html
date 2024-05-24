@@ -30,6 +30,20 @@
             overflow: auto;
         }
 
+        .login-container{
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            height: 100%;
+            position: relative;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow: auto;
+
+        }
+
         h1 {
             font-size: 24px;
             margin-bottom: 20px;
@@ -191,7 +205,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
-    <div class="container">
+
+    <div class="login-container" id="loginContainer">
+        <img src="https://img.icons8.com/ios-filled/100/000000/shopping-cart.png" alt="Ícone de Carrinho de Compras">
+        <h1>Faça o login para acessar a lista de mercado</h1>
+        <button id="loginButton">Login com Google</button>
+    </div>
+
+    <div class="container" style="display: none;">
         <h1>Lista de Mercado </h1>
         <div class="search-bar">
             <input type="text" id="searchInput" placeholder="Pesquisar por produto ou local" oninput="filterItems()">
@@ -226,6 +247,8 @@
 
     
     <script>
+         
+         
         const CLIENT_ID = '324306023186-fpmafcv82trtnulosg6c8upv5r9udesi.apps.googleusercontent.com';
         const REDIRECT_URI = 'https://psilva1987.github.io/lista-de-mercado/';
         const SCOPES = 'https://www.googleapis.com/auth/spreadsheets';
@@ -247,7 +270,8 @@
 
             if (accessToken) {
                 ACCESS_TOKEN = accessToken;
-                document.getElementById('loginButton').style.display = 'none';
+                document.getElementById('loginContainer').style.display = 'none';
+                document.getElementById('Container').style.display = 'block';
                 loadItems();
             } else {
                 console.log('Erro ao obter token de acesso');
