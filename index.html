@@ -250,6 +250,7 @@
         </div>
        
         <div class="edit-container" id="editContainer">
+            
             <input type="text" id="editItemInput" placeholder="Item">
             <input type="number" id="editQuantityInput" placeholder="Quantidade">
             <input type="text" id="editLocationInput" placeholder="Local">
@@ -259,13 +260,14 @@
        
         <div class="add-container" id="addContainer" >
             
-            <button onclick="closeAddContainer()" style="position: absolute; top: 0; right: 0; border: none; background: none;"><i style="font-size:24px" class="fa"></i></button>
-            <input type="text" id="addItemInput" placeholder="Item">
+            <button onclick="closeAddContainer()" style="position: absolute; top: 0; right: 0; border: none; background: none; color: red;"><i style="font-size:24px" class="fa"></i></button>
+            <input type="text" id="addItemInput" placeholder="Item" style="margin-top: 30px;">
             <input type="number" id="addQuantityInput" placeholder="Quantidade">
             <input type="text" id="addLocationInput" placeholder="Local">
             <button onclick="addItem()">Adicionar</button>
             
         </div>
+
 
        
         
